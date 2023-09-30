@@ -1,0 +1,214 @@
+package com.example.monitoringandevaluationapp.presentation
+
+import android.Manifest
+import android.app.Activity
+
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
+import android.net.Uri
+import android.os.Environment
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
+import com.google.common.util.concurrent.ListenableFuture
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
+import coil.compose.rememberImagePainter
+import com.example.monitoringandevaluationapp.R
+import com.example.monitoringandevaluationapp.data.AppDatabase
+import com.example.monitoringandevaluationapp.data.LocationDao
+import com.example.monitoringandevaluationapp.data.LocationEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Objects
+
+
+const val CAMERA_REQUEST_CODE = 1001
+
+fun Context.findActivity(): AppCompatActivity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is AppCompatActivity) {
+            return context
+        }
+        context = context.baseContext
+    }
+    return null
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CaptureImageScreen(navController: NavController) {
+    val context = LocalContext.current
+    val file = context.createImageFile()
+    val uri = FileProvider.getUriForFile(
+        Objects.requireNonNull(context),
+        "${context.packageName}.provider",
+        file
+    )
+
+    var location by remember { mutableStateOf<Location?>(null) }
+
+    // Initialize LocationManager
+    val locationManager =
+        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+    val hasLocationPermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    var capturedImageUri by remember { mutableStateOf<Uri>(Uri.EMPTY) }
+    var description by remember { mutableStateOf("") }
+
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
+        capturedImageUri = uri
+        // You can add more logic here, such as saving the image URI and description to a database.
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        if (it) {
+            Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+            cameraLauncher.launch(uri)
+        } else {
+            ActivityCompat.requestPermissions(
+                context as Activity,
+                arrayOf(Manifest.permission.CAMERA),
+                CAMERA_REQUEST_CODE
+            )
+        }
+    }
+
+    if (hasLocationPermission) {
+        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+    }
+
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        TopAppBar(
+            title = { Text("Capture Image") },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        )
+
+        if (capturedImageUri.path?.isNotEmpty() == true) {
+            Image(
+                modifier = Modifier
+                    .height(200.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .border(2.dp, Color.Gray),
+                painter = rememberImagePainter(capturedImageUri),
+                contentDescription = null
+            )
+        } else {
+            Image(
+                modifier = Modifier
+                    .height(200.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .border(2.dp, Color.Gray),
+                painter = painterResource(id = R.drawable.baseline_camera_alt_24), 
+                contentDescription = null
+            )
+        }
+
+        TextField(
+            value = description,
+            onValueChange = { newValue -> description = newValue },
+            label = { Text("Description") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        Button(onClick = {
+            val permissionCheckResult =
+                ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+
+            if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                cameraLauncher.launch(uri)
+            } else {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }) {
+            Text("Capture and Save")
+        }
+    }
+}
+
+// Existing Context extension function
+fun Context.createImageFile(): File {
+    val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss").format(Date())
+    val imageFileName = "JPEG_" + timeStamp + "_"
+    val image = File.createTempFile(
+        imageFileName,
+        ".jpg",
+        externalCacheDir
+    )
+
+    return image
+}
+
+
+
+
+

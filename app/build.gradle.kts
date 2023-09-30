@@ -79,6 +79,7 @@ dependencies {
     // Room
     implementation("androidx.room:room-runtime:2.5.2")
     kapt("androidx.room:room-compiler:2.5.2")
+    implementation("androidx.room:room-ktx:2.5.2")
 
     // Camera X
     implementation("androidx.camera:camera-core:1.2.3")
@@ -94,4 +95,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
 
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    //hilt
+    implementation("com.google.dagger:hilt-android:2.45")
+    kapt("com.google.dagger:hilt-android-compiler:2.41")
+
 }

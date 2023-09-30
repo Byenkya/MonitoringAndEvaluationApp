@@ -46,12 +46,43 @@ fun MapViewScreen(navController: NavController) {
 
     // Declare request code for location permission
     val LOCATION_REQUEST_CODE = 1002
+    val WRITE_REQUEST_CODE = 1003
+    val READ_REQUEST_CODE = 1004
 
     // Permission check for location
     val hasLocationPermission = ContextCompat.checkSelfPermission(
         context,
         Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
+
+    val hasWritePermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if(!hasWritePermission) {
+        // Request write permission
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            WRITE_REQUEST_CODE
+        )
+    }
+
+    val hasReadPermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if(!hasReadPermission) {
+        // Request read permission
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+            READ_REQUEST_CODE
+        )
+    }
+
 
     // Location Manager
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -71,6 +102,8 @@ fun MapViewScreen(navController: NavController) {
             LOCATION_REQUEST_CODE
         )
     }
+
+
 
     Column(
         modifier = Modifier

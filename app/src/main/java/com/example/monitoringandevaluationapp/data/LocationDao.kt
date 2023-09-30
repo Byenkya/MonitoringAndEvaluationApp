@@ -7,5 +7,5 @@ import androidx.room.OnConflictStrategy
 @Dao
 interface LocationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertLocation(location: LocationEntity)
+    suspend fun insertLocation(location: LocationEntity)
 }

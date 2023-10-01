@@ -22,19 +22,13 @@ import android.Manifest
 import android.app.Activity
 import android.location.Location
 import android.location.LocationManager
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -83,7 +77,6 @@ fun MapViewScreen(navController: NavController) {
         )
     }
 
-
     // Location Manager
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -102,8 +95,6 @@ fun MapViewScreen(navController: NavController) {
             LOCATION_REQUEST_CODE
         )
     }
-
-
 
     Column(
         modifier = Modifier
@@ -127,21 +118,8 @@ fun MapViewScreen(navController: NavController) {
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Button(
-            onClick = { navController.navigate("captureImage") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .padding(6.dp)
-        ) {
-            Text("Go to Capture Image")
-        }
     }
 }
-
-
 @Composable
 fun rememberMapViewWithLifecycle(context: Context): MapView {
     val mapView = remember {

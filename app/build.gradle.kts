@@ -100,4 +100,13 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.45")
     kapt("com.google.dagger:hilt-android-compiler:2.41")
 
+    //observe state
+    implementation("androidx.compose.runtime:runtime:1.5.2")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")  // You might have to check for the latest version
+
+    implementation("androidx.compose.material:material:1.5.2")
+
+
+
 }

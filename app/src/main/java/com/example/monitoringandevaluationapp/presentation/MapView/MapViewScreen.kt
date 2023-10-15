@@ -1,4 +1,4 @@
-package com.example.monitoringandevaluationapp.presentation
+package com.example.monitoringandevaluationapp.presentation.MapView
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -20,23 +19,38 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import android.provider.Settings
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 @Composable
 fun MapViewScreen(navController: NavController) {
     val context = LocalContext.current
     val mapView = rememberMapViewWithLifecycle(context)
+    // Declare and initialize the LocationManager
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+    var isMapLoading by remember { mutableStateOf(true) }
 
     // Declare request code for location permission
     val LOCATION_REQUEST_CODE = 1002
@@ -77,8 +91,13 @@ fun MapViewScreen(navController: NavController) {
         )
     }
 
-    // Location Manager
-    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+
+    LaunchedEffect(Unit) {
+        isMapLoading = true
+    }
+
+
 
     var userLocation by remember { mutableStateOf(LatLng(0.0, 0.0)) }
 
@@ -96,6 +115,15 @@ fun MapViewScreen(navController: NavController) {
         )
     }
 
+    if (isMapLoading) {
+        Dialog(onDismissRequest = {}) {
+            Box(modifier = Modifier.size(200.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+                Text("Loading Map...", modifier = Modifier.padding(8.dp))
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -107,6 +135,9 @@ fun MapViewScreen(navController: NavController) {
                 .fillMaxWidth()
         ) { mapView ->
             mapView.getMapAsync { googleMap ->
+                // Hide the loading dialog
+                isMapLoading = false
+
                 // Enable location
                 if (hasLocationPermission) {
                     googleMap.isMyLocationEnabled = true

@@ -1,4 +1,4 @@
-package com.example.monitoringandevaluationapp.presentation
+package com.example.monitoringandevaluationapp.presentation.CaptureData
 
 import android.Manifest
 import android.app.Activity
@@ -214,6 +214,7 @@ fun CaptureImageScreen(navController: NavController, locationViewModel: Location
                         "Data saved successfully!!",
                         Toast.LENGTH_SHORT
                     ).show()
+                    navController.navigate("SavedImages")
                 } catch (e: Exception) {
                     Log.e("Data Capture", "saving data failed due to ${e.message}")
                     throw RuntimeException("Capture: ${e.message}")

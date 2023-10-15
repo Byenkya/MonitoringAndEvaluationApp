@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "745270107547",
+    "project_id": "monitoringandevaluationapp",
+    "storage_bucket": "monitoringandevaluationapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:745270107547:android:69a5ac914d9ce4f506553e",
+        "android_client_info": {
+          "package_name": "com.example.monitoringandevaluationapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArfiQv26NjI8POcM_uXWT8cCLe38eMnsQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

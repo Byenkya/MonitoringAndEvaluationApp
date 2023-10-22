@@ -104,11 +104,11 @@ dependencies {
     kapt("com.google.dagger:hilt-android-compiler:2.41")
 
     //observe state
-    implementation("androidx.compose.runtime:runtime:1.5.2")
+    implementation("androidx.compose.runtime:runtime:1.5.4")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")  // You might have to check for the latest version
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")  // You might have to check for the latest version
 
-    implementation("androidx.compose.material:material:1.5.2")
+    implementation("androidx.compose.material:material:1.5.4")
 
     // Import the BoM for the Firebase platform
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
@@ -118,5 +118,14 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
 
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+
+    implementation("com.google.android.gms:play-services-location:21.0.1")  // Check for the latest version
+
+
+
+
+
 
 }

@@ -164,7 +164,7 @@ fun AppNavigation(
     navController: NavHostController,
     locationViewModel: LocationViewModel,
 ) {
-    NavHost(navController = navController, startDestination = "signIn") {
+    NavHost(navController = navController, startDestination = "mapView") {
 
         composable("signIn") {
 
@@ -212,7 +212,7 @@ fun AppNavigation(
             )
         }
         composable("mapView") {
-            MapViewScreen(navController = navController)
+            MapViewScreen(navController = navController, locationViewModel = locationViewModel)
         }
         composable("captureImage") {
             CaptureImageScreen(navController = navController, locationViewModel = locationViewModel)

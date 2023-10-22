@@ -64,8 +64,9 @@ fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
         )
 
         LazyColumn(
+            modifier = Modifier.padding(bottom = 50.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(locations) { location ->
                 LocationCard(location)

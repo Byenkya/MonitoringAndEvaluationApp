@@ -1,74 +1,55 @@
-package com.example.monitoringandevaluationapp.presentation.CaptureData
-
-import android.Manifest
-import android.app.Activity
-import android.content.ContentValues
+ package com.example.monitoringandevaluationapp.presentation.CaptureData
 
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.TextField
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
-import androidx.core.content.FileProvider
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Observer
+import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
-import com.example.monitoringandevaluationapp.R
-import com.example.monitoringandevaluationapp.data.LocationEntity
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Objects
 import com.example.monitoringandevaluationapp.usecases.LocationViewModel
 import com.google.android.gms.maps.model.LatLng
+import com.maryamrzdh.stepper.Stepper
+import java.io.File
 import java.io.FileOutputStream
-
+import java.text.SimpleDateFormat
+import java.util.Date
 
 const val CAMERA_REQUEST_CODE = 1001
-
 fun Context.findActivity(): AppCompatActivity? {
     var context = this
     while (context is ContextWrapper) {
@@ -86,16 +67,13 @@ fun CaptureImageScreen(navController: NavController, locationViewModel: Location
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val file = context.createImageFile()
-    val uri = FileProvider.getUriForFile(
-        Objects.requireNonNull(context),
-        "${context.packageName}.provider",
-        file
-    )
-
     // State for controlling dialog visibility
     val showDialog = remember { mutableStateOf(true) }
-
     var userLocation by remember{ mutableStateOf(LatLng(0.0, 0.0)) }
+
+    val numberStep = 6 // 6 steps in total
+    var currentStep by remember { mutableStateOf(1) }
+    val titleList = listOf("Step 1", "Step 2", "Step 3", "Step 4", "Step 5", "Step 6")
 
     DisposableEffect(lifecycleOwner) {
         val observer = Observer<LatLng> { newLocation ->
@@ -108,42 +86,22 @@ fun CaptureImageScreen(navController: NavController, locationViewModel: Location
         onDispose {
             locationViewModel.userLocation.removeObserver(observer)
         }
+
     }
-
-
-    var capturedImageUri by remember { mutableStateOf<Uri>(Uri.EMPTY) }
-    var description by remember { mutableStateOf("") }
-
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
-        capturedImageUri = uri
-        // You can add more logic here, such as saving the image URI and description to a database.
-    }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) {
-        if (it) {
-            Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
-            cameraLauncher.launch(uri)
-        } else {
-            ActivityCompat.requestPermissions(
-                context as Activity,
-                arrayOf(Manifest.permission.CAMERA),
-                CAMERA_REQUEST_CODE
-            )
-        }
-    }
-
-
 
     Column(
         Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(
+                start = 16.dp,
+                top = 16.dp,
+                end = 16.dp,
+                bottom = 55.dp // Set the padding for the bottom here
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopAppBar(
-            title = { Text("Capture Image") },
+            title = { Text("Project Information") },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
@@ -151,101 +109,43 @@ fun CaptureImageScreen(navController: NavController, locationViewModel: Location
             }
         )
 
-        if (capturedImageUri.path?.isNotEmpty() == true) {
-            Image(
-                modifier = Modifier
-                    .height(200.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .border(2.dp, Color.Gray),
-                painter = rememberImagePainter(capturedImageUri),
-                contentDescription = null
-            )
-        } else {
-            Image(
-                modifier = Modifier
-                    .height(200.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .border(2.dp, Color.Gray),
-                painter = painterResource(id = R.drawable.baseline_camera_alt_24), 
-                contentDescription = null
-            )
-        }
-
-        Button(onClick = {
-            Log.d("CaptureImageScreen", "Current stored location: Lat=${userLocation.latitude}, Long=${userLocation.longitude}")
-            try {
-                val permissionCheckResult =
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-
-                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                    val isCameraAvailable = context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
-                    if (isCameraAvailable) {
-                        cameraLauncher.launch(uri)
-                    } else  {
-                        Toast.makeText(
-                            context,
-                            "Camera being used bt another program",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-
-                } else {
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
-                }
-            } catch (e: Exception) {
-                Log.e("Launch Camera", "Starting camera failed due to ${e.message}")
-            }
-
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)) {
-            Text("Capture Image")
-        }
-
-        TextField(
-            value = description,
-            onValueChange = { newValue -> description = newValue },
-            label = { Text("Description") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
+        Stepper(
+            modifier = Modifier.fillMaxWidth(),
+            numberOfSteps = numberStep,
+            currentStep = currentStep,
+            stepDescriptionList = titleList,
         )
 
-        Button(onClick = {
-            if (capturedImageUri != Uri.EMPTY && description.isNotEmpty()) {
-                try {
-                    val savedFilePath = saveFileToDownloads(context, capturedImageUri, context as Activity)
-                    val locationEntity = LocationEntity(
-                        id = 0, // This is autogenerated
-                        latitude = userLocation.latitude,
-                        longitude = userLocation.longitude,
-                        description = description,
-                        imagePath = savedFilePath!!
-                    )
-                    locationViewModel.saveLocation(locationEntity)
-                    Toast.makeText(
-                        context,
-                        "Data saved successfully!!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    navController.navigate("SavedImages")
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                    Log.e("Data Capture", "saving data failed due to ${e.message}")
-                    throw RuntimeException("Capture: ${e.message}")
-                }
-            } else {
-                Toast.makeText(context, "Missing Information", Toast.LENGTH_SHORT).show()
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)) {
+            when (currentStep) {
+                1 -> StepOne(locationViewModel)
+                2 -> StepTwo(locationViewModel)
+                3 -> StepThree(locationViewModel)
+                4 -> StepFour(locationViewModel)
+                5 -> StepFive(locationViewModel)
+                6 -> Summary(locationViewModel, navController)
+
             }
-        },
-        enabled = !(userLocation.latitude == 0.0 && userLocation.longitude == 0.0), // Add this line
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)) {
-            Text("Save")
+        }
+
+        Row(horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()) {
+
+            Button(
+                onClick = { if (currentStep > 1) currentStep-- },
+                enabled = currentStep > 1) {
+                Text(text = "previous")
+            }
+
+            Button(
+                onClick = {if (currentStep < numberStep) currentStep++ },
+                enabled = currentStep < numberStep) {
+                Text(text = "next")
+            }
+
         }
 
         if (showDialog.value) {
@@ -274,7 +174,60 @@ fun CaptureImageScreen(navController: NavController, locationViewModel: Location
     }
 }
 
-// Existing Context extension function
+ @Composable
+ fun ProjectDetails(
+     projectTitle: String,
+     description: String,
+     imageUri: Uri
+ ) {
+     Column(
+         horizontalAlignment = Alignment.CenterHorizontally
+     ) {
+         Text("Save captured Information", fontSize = 20.sp)
+         Text(
+             text = "Project Title",
+             fontSize = 18.sp,
+             fontWeight = FontWeight.Bold,
+             modifier = Modifier.padding(bottom = 8.dp)
+         )
+
+         Text(
+             text = projectTitle,
+             fontSize = 16.sp,
+             modifier = Modifier.padding(bottom = 8.dp)
+         )
+         Text(
+             text = "Description",
+             fontSize = 18.sp,
+             fontWeight = FontWeight.Bold,
+             modifier = Modifier.padding(bottom = 16.dp)
+         )
+         Text(
+             text = description,
+             fontSize = 16.sp,
+             modifier = Modifier.padding(bottom = 16.dp)
+         )
+
+         if (imageUri?.path?.isNotEmpty() == true) {
+             Image(
+                 painter = rememberImagePainter(imageUri),
+                 contentDescription = null,
+                 contentScale = ContentScale.Crop,
+                 modifier = Modifier
+                     .fillMaxWidth()
+                     .height(200.dp)
+                     .clip(RoundedCornerShape(8.dp))
+                     .border(2.dp, Color.Gray)
+                     .padding(bottom = 16.dp)
+             )
+         }
+     }
+ }
+
+
+
+
+ // Existing Context extension function
 fun Context.createImageFile(): File {
     val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss").format(Date())
     val imageFileName = "JPEG_" + timeStamp + "_"
@@ -287,65 +240,21 @@ fun Context.createImageFile(): File {
     return image
 }
 
-//fun saveFileToDownloads(context: Context, uri: Uri): String {
-//    val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss").format(Date())
-//    val downloadsPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-//    val newFile = File(downloadsPath, "$timeStamp.jpg")
-//
-//    val inputStream = context.contentResolver.openInputStream(uri)
-//    val outputStream = FileOutputStream(newFile)
-//    inputStream?.copyTo(outputStream)
-//
-//    inputStream?.close()
-//    outputStream.close()
-//
-//    return newFile.absolutePath
-//}
+fun saveFileToDownloads(context: Context, uri: Uri): String {
+    val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss").format(Date())
+    val downloadsPath = context.getExternalFilesDir(null)
+    val newFile = File(downloadsPath, "$timeStamp.jpg")
 
-fun saveFileToDownloads(context: Context, uri: Uri, activity: Activity): String? {
-    // Check for permissions
-    if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-        // Request permission
-        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 0)
-        return null
-    }
+    val inputStream = context.contentResolver.openInputStream(uri)
+    val outputStream = FileOutputStream(newFile)
+    inputStream?.copyTo(outputStream)
 
-    val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Date())
+    inputStream?.close()
+    outputStream.close()
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val resolver = context.contentResolver
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, "$timeStamp.jpg")
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
-            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-        }
-
-        val imageUri: Uri? = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-
-        val inputStream = resolver.openInputStream(uri)
-        val outputStream = resolver.openOutputStream(imageUri!!)
-
-        inputStream?.copyTo(outputStream!!)
-        inputStream?.close()
-        outputStream?.close()
-
-        return imageUri.toString()
-    } else {
-        val downloadsPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val newFile = File(downloadsPath, "$timeStamp.jpg")
-
-        val inputStream = context.contentResolver.openInputStream(uri)
-        val outputStream = FileOutputStream(newFile)
-
-        inputStream?.use { input ->
-            outputStream.use { output ->
-                input?.copyTo(output!!)
-            }
-        }
-
-        return newFile.absolutePath
-    }
+    return newFile.absolutePath
 }
+
 
 
 

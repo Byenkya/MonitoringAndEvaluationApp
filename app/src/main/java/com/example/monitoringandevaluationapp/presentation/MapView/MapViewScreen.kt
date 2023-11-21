@@ -1,60 +1,48 @@
 package com.example.monitoringandevaluationapp.presentation.MapView
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
+import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
-import android.Manifest
-import android.app.Activity
-import android.content.Intent
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
-import android.os.Looper
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.window.Dialog
-import androidx.core.app.ActivityCompat
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import android.provider.Settings
-import android.util.Log
-import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.navigation.NavController
 import com.example.monitoringandevaluationapp.data.LocationEntity
 import com.example.monitoringandevaluationapp.usecases.LocationViewModel
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 @Composable
 fun MapViewScreen(navController: NavController, locationViewModel: LocationViewModel) {
     val context = LocalContext.current
@@ -201,17 +189,26 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
                 .weight(1f)
                 .fillMaxWidth()
         ) { mapView ->
-            mapView.getMapAsync { googleMap ->
-                // First setup
-                setupGoogleMap(googleMap, userLocation, locationEntities)
-
-                // Observe changes in saved locations and update the map
-                val observer = Observer<List<LocationEntity>> { newList ->
-                    locationEntities.value = newList
+            try {
+                mapView.getMapAsync { googleMap ->
+                    // First setup
                     setupGoogleMap(googleMap, userLocation, locationEntities)
+
+                    // Observe changes in saved locations and update the map
+                    val observer = Observer<List<LocationEntity>> { newList ->
+                        locationEntities.value = newList
+                        setupGoogleMap(googleMap, userLocation, locationEntities)
+                    }
+                    if (locationViewModel.allLocations.value != null) {
+                        locationViewModel.allLocations.observe(lifecycleOwner, observer)
+                    }
+
+
                 }
-                locationViewModel.allLocations.observe(lifecycleOwner, observer)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
             }
+
         }
 
     }
@@ -245,27 +242,31 @@ fun setupGoogleMap(
     userLocation: LatLng,
     locationEntities: MutableState<List<LocationEntity>>
 ) {
-    googleMap.clear()
-
-    if (locationEntities.value.isNotEmpty()) {
-        locationEntities.value.forEach { entity ->
-            Log.e("Debug", "Entity: $entity")
-            val latLng = LatLng(entity.latitude, entity.longitude)
-            googleMap.addMarker(MarkerOptions().position(latLng).title(entity.description))
-        }
-        googleMap.moveCamera(
-            CameraUpdateFactory.newLatLngZoom(
-                locationEntities.value.first().let {
-                    LatLng(it.latitude, it.longitude)
-                },
-                15f
+    try {
+        googleMap.clear()
+        if (locationEntities.value.isNotEmpty()) {
+            locationEntities.value.forEach { entity ->
+                Log.e("Debug", "Entity: $entity")
+                val latLng = LatLng(entity.latitude, entity.longitude)
+                googleMap.addMarker(MarkerOptions().position(latLng).title(entity.projectName))
+            }
+            googleMap.moveCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    locationEntities.value.first().let {
+                        LatLng(it.latitude, it.longitude)
+                    },
+                    15f
+                )
             )
-        )
-    } else {
-        // No saved locations, use user location
-        googleMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+        } else {
+            // No saved locations, use user location
+            googleMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+        }
+    }catch (e: Exception) {
+        Log.e("zzzzzzzzz", "saving data failed due to ${e.message}")
     }
+
 }
 
 

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,17 +23,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
+import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.monitoringandevaluationapp.data.LocationEntity
 import com.example.monitoringandevaluationapp.usecases.LocationViewModel
-import androidx.compose.runtime.mutableStateListOf
-import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +69,7 @@ fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(locations) { location ->
+            items(locations.sortedByDescending { it.id }) { location ->
                 LocationCard(location)
             }
         }
@@ -80,19 +81,19 @@ fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
 @Composable
 fun LocationCard(location: LocationEntity) {
     // Add the 'file://' scheme to your image path
-    val imagePathWithScheme = "file://${location.imagePath}"
+    val imagePathWithScheme = "file://${location.photoOnePath}"
 
-    val painter = rememberImagePainter(
-        data = imagePathWithScheme,
-        builder = {
-            listener { _, throwable ->
-                throwable?.let {
-                    // Log or print the error here
-                    println("Error loading image: $it")
+    val painter = // Log or print the error here
+        rememberAsyncImagePainter(
+            ImageRequest.Builder(LocalContext.current).data(data = imagePathWithScheme).apply(block = fun ImageRequest.Builder.() {
+                listener { _, throwable ->
+                    throwable?.let {
+                        // Log or print the error here
+                        println("Error loading image: $it")
+                    }
                 }
-            }
-        }
-    )
+            }).build()
+        )
 
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp) ,
@@ -118,7 +119,7 @@ fun LocationCard(location: LocationEntity) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Description: ${location.description}", fontSize = 18.sp)
+                Text("Project : ${location.projectName}", fontSize = 18.sp)
             }
         }
     }

@@ -54,6 +54,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
 
 dependencies {
@@ -68,6 +69,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.room:room-common:2.5.2")
     implementation("androidx.navigation:navigation-runtime-ktx:2.7.3")
+    implementation("androidx.compose.material3:material3:1.2.0-alpha02")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -121,7 +123,9 @@ dependencies {
 
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
 
-    implementation("com.google.android.gms:play-services-location:21.0.1")  // Check for the latest version
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    implementation("com.github.maryamrzdh:compose-stepper:1.0.0-beta01")
 
 
 

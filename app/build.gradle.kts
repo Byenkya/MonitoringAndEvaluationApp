@@ -127,8 +127,8 @@ dependencies {
 
     implementation("com.github.maryamrzdh:compose-stepper:1.0.0-beta01")
 
-
-
+    // glide
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
 
 
 

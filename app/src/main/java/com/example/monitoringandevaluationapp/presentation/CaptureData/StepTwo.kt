@@ -53,6 +53,7 @@ import java.util.UUID
 
 @Composable
 fun StepTwo(locationViewModel: LocationViewModel) {
+    val pattern = remember { Regex("^\\d+\$") }
     val memberUuid = remember { UUID.randomUUID().toString() }
     val memberShipNumber by locationViewModel.memberShipNumber.collectAsState()
     val firstName by locationViewModel.firstName.collectAsState()
@@ -107,15 +108,16 @@ fun StepTwo(locationViewModel: LocationViewModel) {
         // Membership number
         TextField(
             value = memberShipNumber.toString(),
-            onValueChange = { newString ->
-                if (newString.isEmpty() || newString.toIntOrNull() != null) {
-                    locationViewModel.updateMemberShipNumber(newString.toInt())
+            onValueChange = {
+                if (it.matches(pattern)) {
+                    locationViewModel.updateMemberShipNumber(it.toInt())
                 }
             },
             label = { Text("Enter MemberShip Number") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth().padding(4.dp)
         )
+
 
         // First Name
         TextField(

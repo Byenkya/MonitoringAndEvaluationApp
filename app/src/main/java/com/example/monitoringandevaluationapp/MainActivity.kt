@@ -2,9 +2,7 @@ package com.example.monitoringandevaluationapp
 
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
-import android.app.Application
 import android.content.Context
-import android.content.IntentSender
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -13,46 +11,42 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.monitoringandevaluationapp.data.AppDatabase
-import com.example.monitoringandevaluationapp.presentation.CaptureData.CaptureImageScreen
-import com.example.monitoringandevaluationapp.presentation.MapView.MapViewScreen
-import com.example.monitoringandevaluationapp.presentation.SavedData.SavedImageList
-import com.example.monitoringandevaluationapp.repository.LocationRepository
-import com.example.monitoringandevaluationapp.usecases.LocationViewModel
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.monitoringandevaluationapp.data.AppDatabase
+import com.example.monitoringandevaluationapp.presentation.CaptureData.CaptureImageScreen
+import com.example.monitoringandevaluationapp.presentation.MapView.MapViewScreen
+import com.example.monitoringandevaluationapp.presentation.ProjectDetails.ProjectDetails
+import com.example.monitoringandevaluationapp.presentation.SavedData.SavedImageList
 import com.example.monitoringandevaluationapp.presentation.sigin.GoogleAuthUiClient
 import com.example.monitoringandevaluationapp.presentation.sigin.LoginScreen
 import com.example.monitoringandevaluationapp.presentation.sigin.SignInViewModel
+import com.example.monitoringandevaluationapp.repository.LocationRepository
+import com.example.monitoringandevaluationapp.usecases.LocationViewModel
 import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.play.core.integrity.e
-import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -144,7 +138,7 @@ fun AppBottomNavigation(navController: NavHostController) {
         )
         BottomNavigationItem(
             icon = { Icon(Icons.Default.Info, contentDescription = null, tint = Color.White) },
-            label = { Text("Saved Data", color = Color.White) },
+            label = { Text("Projects", color = Color.White) },
             selected = currentRoute == "SavedImages",
             onClick = {
                 if (currentRoute != "SavedImages") {
@@ -219,6 +213,18 @@ fun AppNavigation(
         }
         composable("SavedImages") {
             SavedImageList(navController = navController, viewModel = locationViewModel)
+        }
+        composable("projectDetails/{locationId}") { backStackEntry ->
+            // Retrieve the locationId from the navigation arguments
+            val locationId = backStackEntry.arguments?.getString("locationId")
+            // Retrieve the corresponding LocationEntity based on locationId
+            val locationEntity = locationViewModel.allLocations.value?.firstOrNull {
+                it.id == locationId?.toInt()
+            }
+            // Pass the LocationEntity to the ProjectDetails composable
+            if (locationEntity != null) {
+                ProjectDetails(navController = navController, locationEntity = locationEntity)
+            }
         }
     }
 }

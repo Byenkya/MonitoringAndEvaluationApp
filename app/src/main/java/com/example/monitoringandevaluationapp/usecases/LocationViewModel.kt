@@ -357,9 +357,9 @@ class LocationViewModel(private val repository: LocationRepository) : ViewModel(
     }
 
     // Amount(UGX)
-    private val _amount = MutableStateFlow(0)
+    private val _amount = MutableStateFlow(0L)
     val amount get() = _amount
-    fun updateAmount(amount: Int) {
+    fun updateAmount(amount: Long) {
         viewModelScope.launch {
             _amount.value = amount
         }

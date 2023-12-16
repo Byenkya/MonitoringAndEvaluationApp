@@ -48,8 +48,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
-const val CAMERA_REQUEST_CODE = 1001
+ const val CAMERA_REQUEST_CODE = 1001
 fun Context.findActivity(): AppCompatActivity? {
     var context = this
     while (context is ContextWrapper) {
@@ -241,9 +243,11 @@ fun Context.createImageFile(): File {
 }
 
 fun saveFileToDownloads(context: Context, uri: Uri): String {
-    val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss").format(Date())
+    val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss", Locale.getDefault()).format(Date())
+    val uniqueIdentifier = UUID.randomUUID().toString()
     val downloadsPath = context.getExternalFilesDir(null)
-    val newFile = File(downloadsPath, "$timeStamp.jpg")
+    val newFileName = "$timeStamp$uniqueIdentifier.jpg"
+    val newFile = File(downloadsPath, newFileName)
 
     val inputStream = context.contentResolver.openInputStream(uri)
     val outputStream = FileOutputStream(newFile)

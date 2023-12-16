@@ -39,7 +39,7 @@ data class LocationEntity(
     val endDate: String,
     val expectedDate: String,
     val fundedBy: String,
-    val amount: Int,
+    val amount: Long ,
     val teamLeader: String,
     val teamLeaderEmail: String,
     val teamLeaderPhone: String,
@@ -67,13 +67,6 @@ data class LocationEntity(
     val milestonePhotoOnePath: String,
     val milestonePhotoTwoPath: String,
     val milestonePhotoThreePath: String,
-    val milestonePhotoFourPath: String,
-
-//    val title: String,
-//    val latitude: Double,
-//    val longitude: Double,
-//    val description: String,
-//    val imagePath: String,
-
+    val milestonePhotoFourPath: String
 )
 

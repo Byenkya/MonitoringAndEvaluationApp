@@ -8,13 +8,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,8 +27,12 @@ import androidx.compose.ui.unit.sp
 import com.example.monitoringandevaluationapp.data.Dates
 import com.example.monitoringandevaluationapp.usecases.LocationViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StepThree(locationViewModel: LocationViewModel) {
+    val pattern = remember { Regex("^\\d+\$") }
+    val emailRegex = Regex("^\\S+@\\S+\\.\\S+$")
+    var isEmailValid by remember { mutableStateOf(true) }
     val projectNumber by locationViewModel.projectNumber.collectAsState()
     val projectName by locationViewModel.projectName.collectAsState()
     val projectFocus by locationViewModel.projectFocus.collectAsState()
@@ -51,7 +58,7 @@ fun StepThree(locationViewModel: LocationViewModel) {
         TextField(
             value = projectNumber.toString(),
             onValueChange = { newString ->
-                if (newString.isEmpty() || newString.toIntOrNull() != null) {
+                if (newString.matches(pattern)) {
                     locationViewModel.updateProjectNumber(newString.toInt())
                 }
             },
@@ -118,8 +125,8 @@ fun StepThree(locationViewModel: LocationViewModel) {
         TextField(
             value = amount.toString(),
             onValueChange = { newString ->
-                if (newString.isEmpty() || newString.toIntOrNull() != null) {
-                    locationViewModel.updateAmount(newString.toInt())
+                if (newString.matches(pattern)) {
+                    locationViewModel.updateAmount(newString.toLong())
                 }
             },
             label = { Text("Amount") },
@@ -138,10 +145,27 @@ fun StepThree(locationViewModel: LocationViewModel) {
         // team leader email
         TextField(
             value = teamLeaderEmail,
-            onValueChange = { locationViewModel.updateTeamLeaderEmail(it) },
+            onValueChange = {
+                locationViewModel.updateTeamLeaderEmail(it)
+                isEmailValid = it.isBlank() || it.matches(emailRegex)
+            },
             label = { Text("Team Leader Email") },
-            modifier = Modifier.fillMaxWidth().padding(4.dp)
+            modifier = Modifier.fillMaxWidth().padding(4.dp),
+            isError = teamLeaderEmail.isNotBlank() && !teamLeaderEmail.matches(emailRegex),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+            colors = TextFieldDefaults.textFieldColors(
+                focusedIndicatorColor = if (teamLeaderEmail.matches(emailRegex)) Color.Green else Color.Red
+            ),
+            singleLine = true
         )
+
+        if (!isEmailValid) {
+            Text(
+                text = "Invalid email format",
+                color = Color.Red,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+        }
 
         // team leader phone
         TextField(

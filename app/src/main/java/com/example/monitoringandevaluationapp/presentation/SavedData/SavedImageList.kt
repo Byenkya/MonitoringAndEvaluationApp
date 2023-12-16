@@ -1,6 +1,7 @@
 package com.example.monitoringandevaluationapp.presentation.SavedData
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,12 +20,16 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -40,6 +45,8 @@ import com.example.monitoringandevaluationapp.usecases.LocationViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
+    val context = LocalContext.current
+    var searchQuery by remember { mutableStateOf("") }
     val locations = remember { mutableStateListOf<LocationEntity>() }
 
     LaunchedEffect(key1 = viewModel.allLocations) {
@@ -56,7 +63,7 @@ fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopAppBar(
-            title = { Text("Saved Data") },
+            title = { Text("Projects") },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
@@ -64,22 +71,40 @@ fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
             }
         )
 
+        // Search bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { newQuery ->
+                searchQuery = newQuery
+            },
+            label = { Text("Search by Project Name") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        )
+
         LazyColumn(
             modifier = Modifier.padding(bottom = 50.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(locations.sortedByDescending { it.id }) { location ->
-                LocationCard(location)
+            items(
+                locations
+                    .filter { it.projectName.contains(searchQuery, ignoreCase = true) }
+                    .sortedByDescending { it.id }
+            ) { location ->
+                LocationCard(location = location, onItemClick = {
+                    // Handle item click here, e.g., navigate to a detail screen
+                    navController.navigate("projectDetails/${location.id}")
+                })
             }
         }
     }
 
-
 }
 
 @Composable
-fun LocationCard(location: LocationEntity) {
+fun LocationCard(location: LocationEntity, onItemClick: () -> Unit) {
     // Add the 'file://' scheme to your image path
     val imagePathWithScheme = "file://${location.photoOnePath}"
 
@@ -98,7 +123,7 @@ fun LocationCard(location: LocationEntity) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp) ,
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onItemClick)
     ) {
         Column {
             // Image at the top, starts where the Card starts
@@ -119,7 +144,7 @@ fun LocationCard(location: LocationEntity) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Project : ${location.projectName}", fontSize = 18.sp)
+                Text("Project Name : ${location.projectName}", fontSize = 18.sp)
             }
         }
     }

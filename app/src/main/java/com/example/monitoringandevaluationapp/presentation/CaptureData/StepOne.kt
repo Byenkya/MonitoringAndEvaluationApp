@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
@@ -44,6 +45,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
@@ -56,8 +58,7 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StepOne(locationViewModel: LocationViewModel) {
-    val projectTitle by locationViewModel.projectTitle.collectAsState()
-    val description by locationViewModel.projectDescription.collectAsState()
+    val pattern = remember { Regex("^\\d+\$") }
     val groupName by locationViewModel.groupName.collectAsState()
     val mainActivity by locationViewModel.mainActivity.collectAsState()
     val foundingDate = rememberSaveable { mutableStateOf("") }
@@ -75,10 +76,7 @@ fun StepOne(locationViewModel: LocationViewModel) {
     val creationOn = remember { mutableStateOf("") }
 
     Column(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+        Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start,
     ) {
         Text("Group Information", fontSize = 18.sp)
@@ -127,11 +125,14 @@ fun StepOne(locationViewModel: LocationViewModel) {
         // registration number
         TextField(
             value = registrationNumber,
-            onValueChange = { locationViewModel.updateRegistrationNumber(it) },
+            onValueChange = {
+                if(it.matches(pattern)){
+                    locationViewModel.updateRegistrationNumber(it)
+                }
+            },
             label = { Text("Registration Number") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth().padding(4.dp)
         )
 
         // Registration Date

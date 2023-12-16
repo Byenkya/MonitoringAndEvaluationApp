@@ -31,29 +31,36 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.lifecycle.Observer
 import coil.compose.rememberAsyncImagePainter
 import com.example.monitoringandevaluationapp.R
 import com.example.monitoringandevaluationapp.data.Dates
 import com.example.monitoringandevaluationapp.usecases.LocationViewModel
+import com.google.android.gms.maps.model.LatLng
 import java.util.Objects
 
 @Composable
 fun StepFour(locationViewModel: LocationViewModel) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var userLocation by remember{ mutableStateOf(LatLng(0.0, 0.0)) }
     val assessmentDate = remember { mutableStateOf("") }
     val assessedBy by locationViewModel.assessedBy.collectAsState()
     val assessMilestones by locationViewModel.assessMilestone.collectAsState()
@@ -88,6 +95,19 @@ fun StepFour(locationViewModel: LocationViewModel) {
 
     val cameraLauncher4 = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
         locationViewModel.updatePhotoFourUri(uri)
+    }
+
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = Observer<LatLng> { newLocation ->
+            userLocation = newLocation
+        }
+
+        locationViewModel.userLocation.observe(lifecycleOwner, observer)
+
+        onDispose {
+            locationViewModel.userLocation.removeObserver(observer)
+        }
     }
 
     Column(
@@ -187,7 +207,7 @@ fun StepFour(locationViewModel: LocationViewModel) {
 
         // lat
         TextField(
-            value = lat.toString(),
+            value = userLocation.latitude.toString(),
             onValueChange = { newString ->
                 if (newString.isEmpty() || newString.toIntOrNull() != null) {
                     locationViewModel.updateLat(newString.toDouble())
@@ -200,7 +220,7 @@ fun StepFour(locationViewModel: LocationViewModel) {
 
         // long
         TextField(
-            value = long.toString(),
+            value = userLocation.longitude.toString(),
             onValueChange = { newString ->
                 if (newString.isEmpty() || newString.toIntOrNull() != null) {
                     locationViewModel.updateLong(newString.toDouble())

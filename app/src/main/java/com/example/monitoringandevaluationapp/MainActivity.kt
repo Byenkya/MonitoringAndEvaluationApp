@@ -16,6 +16,7 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,6 +40,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.monitoringandevaluationapp.data.AppDatabase
 import com.example.monitoringandevaluationapp.presentation.CaptureData.CaptureImageScreen
 import com.example.monitoringandevaluationapp.presentation.MapView.MapViewScreen
+import com.example.monitoringandevaluationapp.presentation.ProjectAssessment.ProjectAssessment
 import com.example.monitoringandevaluationapp.presentation.ProjectDetails.ProjectDetails
 import com.example.monitoringandevaluationapp.presentation.SavedData.SavedImageList
 import com.example.monitoringandevaluationapp.presentation.sigin.GoogleAuthUiClient
@@ -128,7 +130,7 @@ fun AppBottomNavigation(navController: NavHostController) {
         )
         BottomNavigationItem(
             icon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.White) },
-            label = { Text("Capture Data", color = Color.White) },
+            label = { Text("Capture", color = Color.White) },
             selected = currentRoute == "captureImage",
             onClick = {
                 if (currentRoute != "captureImage") {
@@ -143,6 +145,17 @@ fun AppBottomNavigation(navController: NavHostController) {
             onClick = {
                 if (currentRoute != "SavedImages") {
                     navController.navigate("SavedImages")
+                }
+            }
+        )
+
+        BottomNavigationItem(
+            selected = currentRoute == "projectAssessment",
+            icon = { Icon(Icons.Default.List, contentDescription = null, tint = Color.White) },
+            label = { Text("Assess", color = Color.White) },
+            onClick = {
+                if (currentRoute != "projectAssessment") {
+                    navController.navigate("projectAssessment")
                 }
             }
         )
@@ -225,6 +238,10 @@ fun AppNavigation(
             if (locationEntity != null) {
                 ProjectDetails(navController = navController, locationEntity = locationEntity)
             }
+        }
+
+        composable("projectAssessment") {
+            ProjectAssessment(navController = navController, locationViewModel = locationViewModel)
         }
     }
 }

@@ -43,10 +43,7 @@ import com.example.monitoringandevaluationapp.data.LocationEntity
 fun ProjectDetails(navController: NavController, locationEntity: LocationEntity){
     if (locationEntity != null) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start
         ) {
             TopAppBar(

@@ -91,6 +91,7 @@ fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
             items(
                 locations
                     .filter { it.projectName.contains(searchQuery, ignoreCase = true) }
+                    .distinctBy { it.projectName }
                     .sortedByDescending { it.id }
             ) { location ->
                 LocationCard(location = location, onItemClick = {

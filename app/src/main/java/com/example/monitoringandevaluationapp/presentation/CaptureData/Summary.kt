@@ -579,6 +579,10 @@ fun Summary(locationViewModel: LocationViewModel, navController: NavController) 
                     missingFields.add("Assessment Date Missing")
                 }
 
+                if (assessedBy.isNullOrBlank()) {
+                    missingFields.add("Assessment By Missing")
+                }
+
                 if(assessmentFor.isNullOrBlank()) {
                     missingFields.add("Assessment For Missing")
                 }
@@ -701,6 +705,7 @@ fun Summary(locationViewModel: LocationViewModel, navController: NavController) 
                             otherProjectContacts = otherProjectContacts,
                             projectDescription = projectDescription,
                             assessmentDate = Dates.assessmentDate,
+                            assessedBy = assessedBy,
                             assessMilestone = assessMilestones,
                             assessmentFor = assessmentFor,
                             observation = obs,

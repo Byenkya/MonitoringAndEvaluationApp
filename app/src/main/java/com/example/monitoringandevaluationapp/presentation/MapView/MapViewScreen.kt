@@ -264,7 +264,7 @@ fun setupGoogleMap(
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
         }
     }catch (e: Exception) {
-        Log.e("zzzzzzzzz", "saving data failed due to ${e.message}")
+        Log.e("loading map view error: ", "saving data failed due to ${e.message}")
     }
 
 }

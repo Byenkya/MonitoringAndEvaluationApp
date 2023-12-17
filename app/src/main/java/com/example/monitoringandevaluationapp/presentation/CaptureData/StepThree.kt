@@ -59,7 +59,7 @@ fun StepThree(locationViewModel: LocationViewModel) {
             value = projectNumber.toString(),
             onValueChange = { newString ->
                 if (newString.matches(pattern)) {
-                    locationViewModel.updateProjectNumber(newString.toInt())
+                    locationViewModel.updateProjectNumber(newString.toLong())
                 }
             },
             label = { Text("Enter Project Number") },

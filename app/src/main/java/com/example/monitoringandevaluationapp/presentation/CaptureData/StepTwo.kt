@@ -110,7 +110,7 @@ fun StepTwo(locationViewModel: LocationViewModel) {
             value = memberShipNumber.toString(),
             onValueChange = {
                 if (it.matches(pattern)) {
-                    locationViewModel.updateMemberShipNumber(it.toInt())
+                    locationViewModel.updateMemberShipNumber(it.toLong())
                 }
             },
             label = { Text("Enter MemberShip Number") },

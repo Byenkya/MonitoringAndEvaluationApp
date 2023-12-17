@@ -202,9 +202,9 @@ class LocationViewModel(private val repository: LocationRepository) : ViewModel(
     }
 
     // Membership Number
-    private val _memberShipNumber = MutableStateFlow(0)
+    private val _memberShipNumber = MutableStateFlow(0L)
     val memberShipNumber get() = _memberShipNumber
-    fun updateMemberShipNumber(number: Int) {
+    fun updateMemberShipNumber(number: Long) {
         viewModelScope.launch {
             _memberShipNumber.value = number
         }
@@ -294,9 +294,9 @@ class LocationViewModel(private val repository: LocationRepository) : ViewModel(
 
     // step 3: project Information
     // projectNumber
-    private val _projectNumber = MutableStateFlow(0)
+    private val _projectNumber = MutableStateFlow(0L)
     val projectNumber get() = _projectNumber
-    fun updateProjectNumber(projectNumber: Int) {
+    fun updateProjectNumber(projectNumber: Long) {
         viewModelScope.launch {
             _projectNumber.value = projectNumber
         }

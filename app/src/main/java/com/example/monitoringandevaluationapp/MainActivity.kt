@@ -41,6 +41,7 @@ import com.example.monitoringandevaluationapp.data.AppDatabase
 import com.example.monitoringandevaluationapp.presentation.CaptureData.CaptureImageScreen
 import com.example.monitoringandevaluationapp.presentation.MapView.MapViewScreen
 import com.example.monitoringandevaluationapp.presentation.ProjectAssessment.ProjectAssessment
+import com.example.monitoringandevaluationapp.presentation.ProjectAssessments.ListOfProjectAssessments
 import com.example.monitoringandevaluationapp.presentation.ProjectDetails.ProjectDetails
 import com.example.monitoringandevaluationapp.presentation.SavedData.SavedImageList
 import com.example.monitoringandevaluationapp.presentation.sigin.GoogleAuthUiClient
@@ -227,6 +228,18 @@ fun AppNavigation(
         composable("SavedImages") {
             SavedImageList(navController = navController, viewModel = locationViewModel)
         }
+        composable("projectAssessments/{projectName}") {backStackEntry ->
+            // Retrieve the locationId from the navigation arguments
+            val projectName = backStackEntry.arguments?.getString("projectName")
+            // Retrieve the corresponding LocationEntity based on locationId
+            val projectAssessments = locationViewModel.allLocations.value
+                ?.filter { it.projectName == projectName }
+            // Pass the LocationEntity to the ProjectDetails composable
+            if (!projectAssessments.isNullOrEmpty()) {
+                ListOfProjectAssessments(navController = navController, assessments = projectAssessments)
+            }
+        }
+
         composable("projectDetails/{locationId}") { backStackEntry ->
             // Retrieve the locationId from the navigation arguments
             val locationId = backStackEntry.arguments?.getString("locationId")

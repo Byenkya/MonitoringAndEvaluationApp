@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,6 +22,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,9 +43,16 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.monitoringandevaluationapp.data.LocationEntity
 
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun ProjectDetails(navController: NavController, locationEntity: LocationEntity){
+    var showDetailsGroupInformation by remember { mutableStateOf(false) }
+    var showDetailsMemberInformation by remember { mutableStateOf(false) }
+    var showDetailsProjectInformation by remember { mutableStateOf(false) }
+    var showDetailsAssessmentInformation by remember { mutableStateOf(false) }
+    var showDetailsMilestoneInformation by remember { mutableStateOf(false) }
+
     if (locationEntity != null) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
@@ -54,339 +66,433 @@ fun ProjectDetails(navController: NavController, locationEntity: LocationEntity)
                     }
                 }
             )
-            Text("Group Information", fontSize = 18.sp)
-            Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
-
-            Text("Group Name: ${locationEntity.groupName}")
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("Group Description\n")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = showDetailsGroupInformation,
+                    onCheckedChange = { isChecked ->
+                        showDetailsGroupInformation = isChecked
                     }
-                    append("${locationEntity.groupDescription}")
-                },
-                textAlign = TextAlign.Start
-            )
-
-            DateWithIcon(
-                date = "Founding Date: ${locationEntity.foundingDate}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Registered Already?")
+                )
                 Spacer(modifier = Modifier.width(8.dp))
-                Checkbox(checked = locationEntity.registered, onCheckedChange = null)
+                Text("Group Information", fontSize = 18.sp)
             }
-
-            Text("Registration Number: ${locationEntity.registrationNumber}")
-
-            DateWithIcon(
-                date = "Registration Date: ${locationEntity.registrationDate}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
-
-            Text("Address(Village): ${locationEntity.village}")
-
-            Text("Parish: ${locationEntity.parish}")
-
-            Text("SubCounty: ${locationEntity.subCounty}")
-
-            Text("County: ${locationEntity.county}")
-
-            Text("District: ${locationEntity.district}")
-
-            Text("Sub Region: ${locationEntity.subRegion}")
-
-            Text("Country: ${locationEntity.country}")
-
-            Text("Created By: ${locationEntity.createdBy}")
-
-            DateWithIcon(
-                date = "Created On: ${locationEntity.createdOn}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
-
-            Text("Member Information", fontSize = 18.sp)
             Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
 
-            Text("Uuid: ${locationEntity.uuid}")
+            if (showDetailsGroupInformation) {
+                Text("Group Name: ${locationEntity.groupName}")
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Group Description\n")
+                        }
+                        append("${locationEntity.groupDescription}")
+                    },
+                    textAlign = TextAlign.Start
+                )
 
-            Text("MemberShip Number: ${locationEntity.memberShipNumber}")
+                DateWithIcon(
+                    date = "Founding Date: ${locationEntity.foundingDate}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
+                )
 
-            Text("Member Names: ${locationEntity.lastName} ${locationEntity.firstName}")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Registered Already?")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Checkbox(checked = locationEntity.registered, onCheckedChange = null)
+                }
 
-            Text("Other Names: ${locationEntity.otherName}")
+                Text("Registration Number: ${locationEntity.registrationNumber}")
 
-            Text("Gender: ${locationEntity.gender}")
+                DateWithIcon(
+                    date = "Registration Date: ${locationEntity.registrationDate}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
+                )
 
-            DateWithIcon(
-                date = "Date of Birth: ${locationEntity.dob}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
+                Text("Address(Village): ${locationEntity.village}")
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Registered Already?")
-                Spacer(modifier = Modifier.width(8.dp))
-                Checkbox(checked = locationEntity.paid, onCheckedChange = null)
+                Text("Parish: ${locationEntity.parish}")
+
+                Text("SubCounty: ${locationEntity.subCounty}")
+
+                Text("County: ${locationEntity.county}")
+
+                Text("District: ${locationEntity.district}")
+
+                Text("Sub Region: ${locationEntity.subRegion}")
+
+                Text("Country: ${locationEntity.country}")
+
+                Text("Created By: ${locationEntity.createdBy}")
+
+                DateWithIcon(
+                    date = "Created On: ${locationEntity.createdOn}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
+                )
+
             }
 
-            Text("Member Role: ${locationEntity.memberRole}\n")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = showDetailsMemberInformation,
+                    onCheckedChange = { isChecked ->
+                        showDetailsMemberInformation = isChecked
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Member Information", fontSize = 18.sp)
+            }
+            Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
 
-            Text("Member Photo")
+            if (showDetailsMemberInformation) {
+                Text("Uuid: ${locationEntity.uuid}")
 
-            if (locationEntity.memberPhotoPath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.memberPhotoPath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
+                Text("MemberShip Number: ${locationEntity.memberShipNumber}")
+
+                Text("Member Names: ${locationEntity.lastName} ${locationEntity.firstName}")
+
+                Text("Other Names: ${locationEntity.otherName}")
+
+                Text("Gender: ${locationEntity.gender}")
+
+                DateWithIcon(
+                    date = "Date of Birth: ${locationEntity.dob}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Registered Already?")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Checkbox(checked = locationEntity.paid, onCheckedChange = null)
+                }
+
+                Text("Member Role: ${locationEntity.memberRole}\n")
+
+                Text("Member Photo")
+
+                if (locationEntity.memberPhotoPath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.memberPhotoPath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Other Details\n")
+                        }
+                        append(locationEntity.otherDetails)
+                    },
+                    textAlign = TextAlign.Start
                 )
             }
 
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("Other Details\n")
-                    }
-                    append("${locationEntity.otherDetails}")
-                },
-                textAlign = TextAlign.Start
-            )
 
             // Displaying project information
-            Text("Project Information", fontSize = 18.sp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = showDetailsProjectInformation,
+                    onCheckedChange = { isChecked ->
+                        showDetailsProjectInformation = isChecked
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Project Information", fontSize = 18.sp)
+            }
             Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
 
-            Text("Project Number: ${locationEntity.projectNumber}")
+            if (showDetailsProjectInformation) {
+                Text("Project Number: ${locationEntity.projectNumber}")
 
-            Text("Project Name: ${locationEntity.projectName}")
+                Text("Project Name: ${locationEntity.projectName}")
 
-            Text("Project Focus: ${locationEntity.projectFocus}")
+                Text("Project Focus: ${locationEntity.projectFocus}")
 
-            DateWithIcon(
-                date = "Start Date: ${locationEntity.startDate}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
+                DateWithIcon(
+                    date = "Start Date: ${locationEntity.startDate}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
+                )
 
-            DateWithIcon(
-                date = "End Date: ${locationEntity.endDate}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
+                DateWithIcon(
+                    date = "End Date: ${locationEntity.endDate}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
+                )
 
-            DateWithIcon(
-                date = "Expected End Date: ${locationEntity.expectedDate}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
+                DateWithIcon(
+                    date = "Expected End Date: ${locationEntity.expectedDate}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
+                )
 
-            Text("Funded By: ${locationEntity.fundedBy}")
+                Text("Funded By: ${locationEntity.fundedBy}")
 
-            Text("Amount: ${locationEntity.amount}")
+                Text("Amount: ${locationEntity.amount}")
 
-            Text("Team Leader(TL): ${locationEntity.teamLeader}")
+                Text("Team Leader(TL): ${locationEntity.teamLeader}")
 
-            Text("TL Email: ${locationEntity.teamLeaderEmail}")
+                Text("TL Email: ${locationEntity.teamLeaderEmail}")
 
-            Text("TL Phone: ${locationEntity.teamLeaderPhone}")
+                Text("TL Phone: ${locationEntity.teamLeaderPhone}")
 
-            Text("Other Project Contacts: ${locationEntity.otherProjectContacts}")
+                Text("Other Project Contacts: ${locationEntity.otherProjectContacts}")
 
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("Project Description\n")
-                    }
-                    append("${locationEntity.projectDescription}")
-                },
-                textAlign = TextAlign.Start
-            )
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Project Description\n")
+                        }
+                        append(locationEntity.projectDescription)
+                    },
+                    textAlign = TextAlign.Start
+                )
+            }
 
             // Displaying assessment information
-            Text("Milestone Information", fontSize = 18.sp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = showDetailsAssessmentInformation,
+                    onCheckedChange = { isChecked ->
+                        showDetailsAssessmentInformation = isChecked
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Assessment Information", fontSize = 18.sp)
+            }
             Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
 
-            DateWithIcon(
-                date = "Assessed Date: ${locationEntity.assessmentDate}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
+            if (showDetailsAssessmentInformation) {
+                DateWithIcon(
+                    date = "Assessed Date: ${locationEntity.assessmentDate}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
+                )
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Milestone assessed?")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Milestone assessed?")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Checkbox(checked = locationEntity.assessMilestone, onCheckedChange = null)
+                }
+
+                Text("Assessed By: ${locationEntity.assessedBy}")
+
+                Text("Assessment For: ${locationEntity.assessmentFor}")
+
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Observation\n")
+                        }
+                        append(locationEntity.observation)
+                    },
+                    textAlign = TextAlign.Start
+                )
+
+                Text("Photo One")
+                if (locationEntity.photoOnePath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.photoOnePath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Text("Photo Two")
+                if (locationEntity.photoTwoPath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.photoTwoPath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Text("Photo Three")
+                if (locationEntity.photoThreePath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.photoThreePath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Text("Photo Four")
+                if (locationEntity.photoFourPath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.photoFourPath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Text("Latitude: ${locationEntity.latitude}")
+
+                Text("Longitude: ${locationEntity.longitude}")
+
+                Text("Altitude: ${locationEntity.altitude}")
+
+                Text("Gps Crs: ${locationEntity.gpsCrs}")
+
+            }
+
+            // milestone information
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = 8.dp,
+                        top = 8.dp,
+                        end = 8.dp,
+                        bottom = 20.dp // Adjust the bottom padding value as needed
+                    ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = showDetailsMilestoneInformation,
+                    onCheckedChange = { isChecked ->
+                        showDetailsMilestoneInformation = isChecked
+                    }
+                )
                 Spacer(modifier = Modifier.width(8.dp))
-                Checkbox(checked = locationEntity.assessMilestone, onCheckedChange = null)
+                Text("Milestone Information", fontSize = 18.sp)
             }
+            Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
 
-            Text("Assessment For: ${locationEntity.assessmentFor}")
-
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("Observation\n")
-                    }
-                    append("${locationEntity.observation}")
-                },
-                textAlign = TextAlign.Start
-            )
-
-            Text("Photo One")
-            if (locationEntity.photoOnePath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.photoOnePath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
+            if (showDetailsMilestoneInformation) {
+                DateWithIcon(
+                    date = "Milestone Assessment Date: ${locationEntity.milestoneDate}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
                 )
-            }
 
-            Text("Photo Two")
-            if (locationEntity.photoTwoPath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.photoTwoPath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Milestone Details\n")
+                        }
+                        append(locationEntity.milestoneDetails)
+                    },
+                    textAlign = TextAlign.Start
                 )
-            }
 
-            Text("Photo Three")
-            if (locationEntity.photoThreePath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.photoThreePath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
+                Text("Milestone Target: ${locationEntity.milestoneTarget}")
+
+                DateWithIcon(
+                    date = "Target Date: ${locationEntity.milestoneTargetDate}",
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.padding(8.dp)
                 )
-            }
 
-            Text("Photo Four")
-            if (locationEntity.photoFourPath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.photoFourPath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
+                Text("Assigned To: ${locationEntity.assignedTo}")
+
+                Text("Status: ${locationEntity.status}")
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Comments\n")
+                        }
+                        append(locationEntity.mileStoneComments)
+                    },
+                    textAlign = TextAlign.Start
                 )
+
+                Text("Photo Milestone Photo One")
+                if (locationEntity.milestonePhotoOnePath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.milestonePhotoOnePath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Text("Photo Milestone Photo Two")
+                if (locationEntity.milestonePhotoTwoPath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.milestonePhotoTwoPath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Text("Photo Milestone Photo Three")
+                if (locationEntity.milestonePhotoThreePath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.milestonePhotoThreePath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Text("Photo Milestone Photo Four")
+                if (locationEntity.milestonePhotoFourPath.isNotEmpty()) {
+                    GlideImage(
+                        model = locationEntity.milestonePhotoFourPath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(150.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(70.dp))
             }
 
-            Text("Latitude: ${locationEntity.latitude}")
-
-            Text("Longitude: ${locationEntity.longitude}")
-
-            Text("Altitude: ${locationEntity.altitude}")
-
-            Text("Gps Crs: ${locationEntity.gpsCrs}")
-
-            DateWithIcon(
-                date = "Milestone Assessment Date: ${locationEntity.milestoneDate}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
-
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("Milestone Details\n")
-                    }
-                    append("${locationEntity.milestoneDetails}")
-                },
-                textAlign = TextAlign.Start
-            )
-
-            Text("Milestone Target: ${locationEntity.milestoneTarget}")
-
-            DateWithIcon(
-                date = "Target Date: ${locationEntity.milestoneTargetDate}",
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.padding(8.dp)
-            )
-
-            Text("Assigned To: ${locationEntity.assignedTo}")
-
-            Text("Status: ${locationEntity.status}")
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("Comments\n")
-                    }
-                    append("${locationEntity.mileStoneComments}")
-                },
-                textAlign = TextAlign.Start
-            )
-
-            Text("Photo Milestone Photo One")
-            if (locationEntity.milestonePhotoOnePath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.milestonePhotoOnePath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Text("Photo Milestone Photo Two")
-            if (locationEntity.milestonePhotoTwoPath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.milestonePhotoTwoPath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Text("Photo Milestone Photo Three")
-            if (locationEntity.milestonePhotoThreePath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.milestonePhotoThreePath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Text("Photo Milestone Photo Four")
-            if (locationEntity.milestonePhotoFourPath.isNotEmpty()) {
-                GlideImage(
-                    model = locationEntity.milestonePhotoFourPath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(70.dp))
         }
     }else {
         // Handle the case where locationEntity  is null
         Text(text = "Invalid location data")
     }
 }
-
 @Composable
 fun DateWithIcon(date: String, icon: ImageVector, modifier: Modifier = Modifier) {
     Row(

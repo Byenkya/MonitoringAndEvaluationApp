@@ -96,7 +96,7 @@ fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
             ) { location ->
                 LocationCard(location = location, onItemClick = {
                     // Handle item click here, e.g., navigate to a detail screen
-                    navController.navigate("projectDetails/${location.id}")
+                    navController.navigate("projectAssessments/${location.projectName}")
                 })
             }
         }
@@ -113,10 +113,7 @@ fun LocationCard(location: LocationEntity, onItemClick: () -> Unit) {
         rememberAsyncImagePainter(
             ImageRequest.Builder(LocalContext.current).data(data = imagePathWithScheme).apply(block = fun ImageRequest.Builder.() {
                 listener { _, throwable ->
-                    throwable?.let {
-                        // Log or print the error here
-                        println("Error loading image: $it")
-                    }
+                    println("Error loading image: $throwable")
                 }
             }).build()
         )

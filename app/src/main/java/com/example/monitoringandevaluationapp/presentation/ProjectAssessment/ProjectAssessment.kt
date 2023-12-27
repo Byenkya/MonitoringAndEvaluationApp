@@ -5,6 +5,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,11 +19,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -36,11 +43,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.example.monitoringandevaluationapp.data.Dates
@@ -54,11 +66,15 @@ import com.example.monitoringandevaluationapp.usecases.LocationViewModel
 import com.google.android.gms.maps.model.LatLng
 import java.util.Objects
 import androidx.lifecycle.Observer
+import com.example.monitoringandevaluationapp.presentation.CaptureData.MissingFieldsDialog
 import com.example.monitoringandevaluationapp.presentation.CaptureData.saveFileToDownloads
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectAssessment(navController: NavController, locationViewModel: LocationViewModel) {
+    val missingFields = mutableListOf<String>()
+    val errorMessage = remember { mutableStateOf("") }
+    val showDialog = remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     var selectedProject by remember { mutableStateOf("") }
     var selectedAssessmentPerson by remember { mutableStateOf("") }
@@ -154,8 +170,8 @@ fun ProjectAssessment(navController: NavController, locationViewModel: LocationV
         )
 
         // assessedBy
-        DropdownWithLabel(
-            label = "Assess By: ",
+        DropdownWithLabelAssessedBy(
+            label = "Select Assessor: ",
             suggestions = projects.map { it.assessedBy }.distinct(),
             selectedText = selectedAssessmentPerson,
             onTextSelected = { selectedPerson ->
@@ -268,106 +284,145 @@ fun ProjectAssessment(navController: NavController, locationViewModel: LocationV
         // save assessment
         Button(onClick = {
             try {
-                val savePhotoOne = saveFileToDownloads(context, photoOneUri!!)
-                val savePhotoTwo = saveFileToDownloads(context, photoTwoUri!!)
-                val savePhotoThree = saveFileToDownloads(context, photoThreeUri!!)
-                val savePhotoFour = saveFileToDownloads(context, photoFourUri!!)
+                if(Dates.assessmentDate.isNullOrBlank()) {
+                    missingFields.add("Assessment Date Missing")
+                }
 
-                val locationEntity = LocationEntity(
-                    id = 0,
-                    groupName = selectedProjectDetails!!.groupName,
-                    groupDescription = selectedProjectDetails!!.groupDescription,
-                    foundingDate = selectedProjectDetails!!.foundingDate,
-                    registered = selectedProjectDetails!!.registered,
-                    registrationNumber = selectedProjectDetails!!.registrationNumber,
-                    registrationDate = selectedProjectDetails!!.registrationDate,
-                    village = selectedProjectDetails!!.village,
-                    parish = selectedProjectDetails!!.parish,
-                    subCounty = selectedProjectDetails!!.subCounty,
-                    county = selectedProjectDetails!!.county,
-                    district = selectedProjectDetails!!.district,
-                    subRegion = selectedProjectDetails!!.subRegion,
-                    country = selectedProjectDetails!!.country,
-                    createdBy = selectedProjectDetails!!.createdBy,
-                    createdOn = selectedProjectDetails!!.createdOn,
-                    uuid = selectedProjectDetails!!.uuid,
-                    memberShipNumber = selectedProjectDetails!!.memberShipNumber,
-                    firstName = selectedProjectDetails!!.firstName,
-                    lastName = selectedProjectDetails!!.lastName,
-                    otherName = selectedProjectDetails!!.otherName,
-                    gender = selectedProjectDetails!!.gender,
-                    dob = selectedProjectDetails!!.dob,
-                    paid = selectedProjectDetails!!.paid,
-                    memberRole = selectedProjectDetails!!.memberRole,
-                    memberPhotoPath = selectedProjectDetails!!.memberPhotoPath,
-                    otherDetails = selectedProjectDetails!!.otherDetails,
-                    projectNumber = selectedProjectDetails!!.projectNumber,
-                    projectName = selectedProjectDetails!!.projectName,
-                    projectFocus = selectedProjectDetails!!.projectFocus,
-                    startDate = Dates.startDate,
-                    endDate = Dates.endDate,
-                    expectedDate = Dates.expectedEndDate,
-                    fundedBy = selectedProjectDetails!!.fundedBy,
-                    amount = selectedProjectDetails!!.amount,
-                    teamLeader = selectedProjectDetails!!.teamLeader,
-                    teamLeaderEmail = selectedProjectDetails!!.teamLeaderEmail,
-                    teamLeaderPhone = selectedProjectDetails!!.teamLeaderPhone,
-                    otherProjectContacts = selectedProjectDetails!!.otherProjectContacts,
-                    projectDescription = selectedProjectDetails!!.projectDescription,
-                    assessmentDate = Dates.assessmentDate,
-                    assessedBy = selectedAssessmentPerson,
-                    assessMilestone = assessMilestones,
-                    assessmentFor = assessmentFor,
-                    observation = obs,
-                    photoOnePath = savePhotoOne,
-                    photoTwoPath = savePhotoTwo,
-                    photoThreePath = savePhotoThree,
-                    photoFourPath = savePhotoFour,
-                    latitude = userLocation.latitude,
-                    longitude = userLocation.longitude,
-                    altitude = selectedProjectDetails!!.altitude,
-                    gpsCrs = selectedProjectDetails!!.gpsCrs,
-                    milestoneDate = Dates.milestoneAssessmentDate,
-                    milestoneDetails = selectedProjectDetails!!.milestoneDetails,
-                    milestoneTarget = selectedProjectDetails!!.milestoneTarget,
-                    milestoneTargetDate = selectedProjectDetails!!.milestoneTargetDate,
-                    assignedTo = selectedProjectDetails!!.assignedTo,
-                    status = selectedProjectDetails!!.status,
-                    mileStoneComments = selectedProjectDetails!!.mileStoneComments,
-                    milestonePhotoOnePath = selectedProjectDetails!!.milestonePhotoOnePath,
-                    milestonePhotoTwoPath = selectedProjectDetails!!.milestonePhotoTwoPath,
-                    milestonePhotoThreePath = selectedProjectDetails!!.milestonePhotoThreePath,
-                    milestonePhotoFourPath = selectedProjectDetails!!.milestonePhotoFourPath
-                )
+                if (selectedAssessmentPerson.isNullOrBlank()) {
+                    missingFields.add("Assessment By Missing")
+                }
 
-                locationViewModel.saveLocation(locationEntity)
-                Toast.makeText(context, "Data saved successfully!!", Toast.LENGTH_SHORT).show()
+                if(assessmentFor.isNullOrBlank()) {
+                    missingFields.add("Assessment For Missing")
+                }
 
-                // step 4
-                locationViewModel.updateAssessedBy("")
-                locationViewModel.updateAssessMilestone(false)
-                locationViewModel.updateAssessmentFor("")
-                locationViewModel.updateObs("")
-                locationViewModel.updatePhotoOneUri(null)
-                locationViewModel.updatePhotoTwoUri(null)
-                locationViewModel.updatePhotoThreeUri(null)
-                locationViewModel.updatePhotoFourUri(null)
-                locationViewModel.updateAltitude("")
-                locationViewModel.updateGps("")
+                if(obs.isNullOrBlank()) {
+                    missingFields.add("Observation Missing")
+                }
 
-                // empty all dates too
-                Dates.foundingDates = ""
-                Dates.registrationDate = ""
-                Dates.creationDate = ""
-                Dates.dob = ""
-                Dates.startDate = ""
-                Dates.endDate = ""
-                Dates.expectedEndDate = ""
-                Dates.assessmentDate = ""
-                Dates.milestoneAssessmentDate = ""
-                Dates.targetDate = ""
+                if(photoOneUri == null) {
+                    missingFields.add("Photo One Missing Missing")
+                }
 
-                navController.navigate("SavedImages")
+                if(photoTwoUri == null) {
+                    missingFields.add("Photo Two Missing Missing")
+                }
+
+                if(photoThreeUri == null) {
+                    missingFields.add("Photo Three Missing")
+                }
+
+                if(photoFourUri == null) {
+                    missingFields.add("Photo Four Missing")
+                }
+
+                if (missingFields.isEmpty()) {
+                    val savePhotoOne = saveFileToDownloads(context, photoOneUri!!)
+                    val savePhotoTwo = saveFileToDownloads(context, photoTwoUri!!)
+                    val savePhotoThree = saveFileToDownloads(context, photoThreeUri!!)
+                    val savePhotoFour = saveFileToDownloads(context, photoFourUri!!)
+
+
+                    val locationEntity = LocationEntity(
+                        id = 0,
+                        groupName = selectedProjectDetails!!.groupName,
+                        groupDescription = selectedProjectDetails!!.groupDescription,
+                        foundingDate = selectedProjectDetails!!.foundingDate,
+                        registered = selectedProjectDetails!!.registered,
+                        registrationNumber = selectedProjectDetails!!.registrationNumber,
+                        registrationDate = selectedProjectDetails!!.registrationDate,
+                        village = selectedProjectDetails!!.village,
+                        parish = selectedProjectDetails!!.parish,
+                        subCounty = selectedProjectDetails!!.subCounty,
+                        county = selectedProjectDetails!!.county,
+                        district = selectedProjectDetails!!.district,
+                        subRegion = selectedProjectDetails!!.subRegion,
+                        country = selectedProjectDetails!!.country,
+                        createdBy = selectedProjectDetails!!.createdBy,
+                        createdOn = selectedProjectDetails!!.createdOn,
+                        uuid = selectedProjectDetails!!.uuid,
+                        memberShipNumber = selectedProjectDetails!!.memberShipNumber,
+                        firstName = selectedProjectDetails!!.firstName,
+                        lastName = selectedProjectDetails!!.lastName,
+                        otherName = selectedProjectDetails!!.otherName,
+                        gender = selectedProjectDetails!!.gender,
+                        dob = selectedProjectDetails!!.dob,
+                        paid = selectedProjectDetails!!.paid,
+                        memberRole = selectedProjectDetails!!.memberRole,
+                        memberPhotoPath = selectedProjectDetails!!.memberPhotoPath,
+                        otherDetails = selectedProjectDetails!!.otherDetails,
+                        projectNumber = selectedProjectDetails!!.projectNumber,
+                        projectName = selectedProjectDetails!!.projectName,
+                        projectFocus = selectedProjectDetails!!.projectFocus,
+                        startDate = Dates.startDate,
+                        endDate = Dates.endDate,
+                        expectedDate = Dates.expectedEndDate,
+                        fundedBy = selectedProjectDetails!!.fundedBy,
+                        amount = selectedProjectDetails!!.amount,
+                        teamLeader = selectedProjectDetails!!.teamLeader,
+                        teamLeaderEmail = selectedProjectDetails!!.teamLeaderEmail,
+                        teamLeaderPhone = selectedProjectDetails!!.teamLeaderPhone,
+                        otherProjectContacts = selectedProjectDetails!!.otherProjectContacts,
+                        projectDescription = selectedProjectDetails!!.projectDescription,
+                        assessmentDate = Dates.assessmentDate,
+                        assessedBy = selectedAssessmentPerson,
+                        assessMilestone = assessMilestones,
+                        assessmentFor = assessmentFor,
+                        observation = obs,
+                        photoOnePath = savePhotoOne,
+                        photoTwoPath = savePhotoTwo,
+                        photoThreePath = savePhotoThree,
+                        photoFourPath = savePhotoFour,
+                        latitude = userLocation.latitude,
+                        longitude = userLocation.longitude,
+                        altitude = selectedProjectDetails!!.altitude,
+                        gpsCrs = selectedProjectDetails!!.gpsCrs,
+                        milestoneDate = Dates.milestoneAssessmentDate,
+                        milestoneDetails = selectedProjectDetails!!.milestoneDetails,
+                        milestoneTarget = selectedProjectDetails!!.milestoneTarget,
+                        milestoneTargetDate = selectedProjectDetails!!.milestoneTargetDate,
+                        assignedTo = selectedProjectDetails!!.assignedTo,
+                        status = selectedProjectDetails!!.status,
+                        mileStoneComments = selectedProjectDetails!!.mileStoneComments,
+                        milestonePhotoOnePath = selectedProjectDetails!!.milestonePhotoOnePath,
+                        milestonePhotoTwoPath = selectedProjectDetails!!.milestonePhotoTwoPath,
+                        milestonePhotoThreePath = selectedProjectDetails!!.milestonePhotoThreePath,
+                        milestonePhotoFourPath = selectedProjectDetails!!.milestonePhotoFourPath
+                    )
+
+                    locationViewModel.saveLocation(locationEntity)
+                    Toast.makeText(context, "Data saved successfully!!", Toast.LENGTH_SHORT).show()
+
+                    // step 4
+                    locationViewModel.updateAssessedBy("")
+                    locationViewModel.updateAssessMilestone(false)
+                    locationViewModel.updateAssessmentFor("")
+                    locationViewModel.updateObs("")
+                    locationViewModel.updatePhotoOneUri(null)
+                    locationViewModel.updatePhotoTwoUri(null)
+                    locationViewModel.updatePhotoThreeUri(null)
+                    locationViewModel.updatePhotoFourUri(null)
+                    locationViewModel.updateAltitude("")
+                    locationViewModel.updateGps("")
+
+                    // empty all dates too
+                    Dates.foundingDates = ""
+                    Dates.registrationDate = ""
+                    Dates.creationDate = ""
+                    Dates.dob = ""
+                    Dates.startDate = ""
+                    Dates.endDate = ""
+                    Dates.expectedEndDate = ""
+                    Dates.assessmentDate = ""
+                    Dates.milestoneAssessmentDate = ""
+                    Dates.targetDate = ""
+
+                    navController.navigate("SavedImages")
+                }else {
+                    showDialog.value = true
+                    val missingFieldsMessage = "Please provide information for the following fields:\n${missingFields.joinToString(",\n")}"
+                    errorMessage.value = missingFieldsMessage
+                }
 
             } catch(e: Exception) {
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
@@ -382,7 +437,115 @@ fun ProjectAssessment(navController: NavController, locationViewModel: LocationV
             Text("Save Assessment")
         }
 
+        if (showDialog.value) {
+            MissingFieldsDialog(mainDialog = showDialog, message = errorMessage, onDismiss = { /* handle dismiss */ })
+        }
+
 
     }
 
+}
+@Composable
+fun DropdownWithLabelAssessedBy(
+    label: String,
+    suggestions: List<String>,
+    selectedText: String,
+    onTextSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var textFieldSize by remember { mutableStateOf(Size.Zero) }
+    var searchQuery by remember { mutableStateOf("") }
+    var customAssessor by remember { mutableStateOf("") }
+
+    val icon = Icons.Filled.ArrowDropDown
+
+    Box {
+        OutlinedTextField(
+            value = selectedText,
+            onValueChange = { /* No-op, as it's readOnly */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    textFieldSize = coordinates.size.toSize()
+                },
+            label = { Text(label) },
+            readOnly = true,
+            trailingIcon = {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "DropDown",
+                    modifier = Modifier.clickable { expanded = !expanded }
+                )
+            }
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+        ) {
+            // Add a search TextField at the top
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = {
+                        searchQuery = it
+                    },
+                    placeholder = { Text("Search") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // Display filtered suggestions
+//            / Filter suggestions based on the search query
+            val filteredSuggestions = suggestions.filter {
+                it.contains(searchQuery, ignoreCase = true)
+            }
+
+            // Display filtered suggestions
+            filteredSuggestions.forEach { suggestion ->
+                androidx.compose.material.DropdownMenuItem(onClick = {
+                    onTextSelected(suggestion)
+                    expanded = false
+                }) {
+                    Text(text = suggestion)
+                }
+            }
+
+            // Divider
+            Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
+
+            // Allow user to add a custom assessor
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                TextField(
+                    value = customAssessor,
+                    onValueChange = {
+                        customAssessor = it
+                    },
+                    placeholder = { Text("Add Project assessor") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // Add button to confirm custom assessor
+            androidx.compose.material.DropdownMenuItem(onClick = {
+                if (customAssessor.isNotBlank()) {
+                    onTextSelected(customAssessor)
+                    expanded = false
+                }
+            }) {
+                Text(text = "Add Project Assessor", fontWeight = FontWeight.Bold)
+            }
+
+        }
+    }
 }

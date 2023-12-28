@@ -236,7 +236,11 @@ fun AppNavigation(
                 ?.filter { it.projectName == projectName }
             // Pass the LocationEntity to the ProjectDetails composable
             if (!projectAssessments.isNullOrEmpty()) {
-                ListOfProjectAssessments(navController = navController, assessments = projectAssessments)
+                ListOfProjectAssessments(
+                    navController = navController,
+                    assessments = projectAssessments,
+                    viewModel = locationViewModel
+                )
             }
         }
 

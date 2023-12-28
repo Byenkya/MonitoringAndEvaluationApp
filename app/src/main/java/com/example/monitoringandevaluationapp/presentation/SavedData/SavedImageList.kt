@@ -15,6 +15,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,13 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.example.monitoringandevaluationapp.R
 import com.example.monitoringandevaluationapp.data.LocationEntity
 import com.example.monitoringandevaluationapp.usecases.LocationViewModel
 
@@ -68,7 +75,7 @@ fun SavedImageList(navController: NavController, viewModel: LocationViewModel) {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                 }
-            }
+            },
         )
 
         // Search bar
@@ -111,7 +118,8 @@ fun LocationCard(location: LocationEntity, onItemClick: () -> Unit) {
 
     val painter = // Log or print the error here
         rememberAsyncImagePainter(
-            ImageRequest.Builder(LocalContext.current).data(data = imagePathWithScheme).apply(block = fun ImageRequest.Builder.() {
+            ImageRequest.Builder(LocalContext.current).data(data = imagePathWithScheme).apply(
+                block = fun ImageRequest.Builder.() {
                 listener { _, throwable ->
                     println("Error loading image: $throwable")
                 }
@@ -147,6 +155,7 @@ fun LocationCard(location: LocationEntity, onItemClick: () -> Unit) {
         }
     }
 }
+
 
 
 

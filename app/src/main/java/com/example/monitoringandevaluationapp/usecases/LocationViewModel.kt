@@ -1,6 +1,14 @@
 package com.example.monitoringandevaluationapp.usecases
 
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
 import android.net.Uri
+import android.os.Environment
+import android.util.Log
+import android.util.Size
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,6 +20,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class LocationViewModel(private val repository: LocationRepository) : ViewModel() {
 
@@ -637,6 +651,118 @@ class LocationViewModel(private val repository: LocationRepository) : ViewModel(
 
     }
 
-
-
+    suspend fun downloadPDF(location: LocationEntity) {
+        withContext(Dispatchers.IO) {
+            // Call the generatePdfForProject function for the specific project
+            generatePdfForProject(location)
+        }
+    }
 }
+
+private suspend fun generatePdfForProject(project: LocationEntity) {
+    withContext(Dispatchers.IO) {
+        // Create a PDF document
+        val outputFolder = File(
+            Environment.getExternalStorageDirectory(),
+            "PDFs"
+        ) // Change the folder path as needed
+        outputFolder.mkdirs()
+
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val pdfFile = File(outputFolder, "${project.projectName}_Report_$timeStamp.pdf")
+
+        try {
+            // Create a PdfDocument
+            val pdfDocument = PdfDocument()
+
+            // Set the page size (adjust as needed)
+            val pageSize = Size(600, 800)
+
+            // Create a PageInfo with the desired page attributes
+            val pageInfo = PdfDocument.PageInfo.Builder(pageSize.width, pageSize.height, 1).create()
+
+            // Start a new page
+            val page = pdfDocument.startPage(pageInfo)
+
+            // Get the canvas for drawing on the page
+            val canvas = page.canvas
+
+            // Set up a paint object for styling
+            val paint = Paint()
+            paint.color = Color.BLACK
+
+            // Add margins to the page
+            val leftMargin = 40f
+            val topMargin = 40f
+            val rightMargin = 40f
+
+            // Draw text on the canvas one line at a time with a new line
+            var yPos = topMargin
+            val lineHeight = 20f // Adjust based on font size and spacing
+
+            // Draw project details
+            yPos = drawTextLine(canvas, paint, "Project Name: ${project.projectName}", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(canvas, paint, "Project Focus: ${project.projectFocus}", leftMargin, yPos, lineHeight)
+            // Add other project details...
+
+            yPos += lineHeight // Add space between sections
+
+            // Draw member details
+            yPos = drawTextLine(canvas, paint, "Team Leader: ${project.teamLeader}", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(canvas, paint, "Member Name: ${project.firstName} ${project.lastName}", leftMargin, yPos, lineHeight)
+            // Add other member details...
+
+            yPos += lineHeight // Add space between sections
+
+            // Draw assessment details
+            yPos = drawTextLine(canvas, paint, "Assessment Date: ${project.assessmentDate}", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(canvas, paint, "Assessed By: ${project.assessedBy}", leftMargin, yPos, lineHeight)
+            // Add other assessment details...
+
+            // Center images in the canvas with margins
+            val imageMargin = 40f
+            yPos += imageMargin
+            yPos = drawImageCentered(canvas, paint, project.photoOnePath, leftMargin, rightMargin, yPos)
+            yPos = drawImageCentered(canvas, paint, project.photoTwoPath, leftMargin, rightMargin, yPos)
+            // Add more images as needed...
+
+            // Finish the page
+            pdfDocument.finishPage(page)
+
+            // Save the PDF to a file
+            val fileOutputStream = FileOutputStream(pdfFile)
+            pdfDocument.writeTo(fileOutputStream)
+            fileOutputStream.close()
+
+            // Close the PDF document
+            pdfDocument.close()
+        } catch (e: Exception) {
+            Log.e("File error", " Error while creating file", e)
+            e.printStackTrace()
+        }
+    }
+}
+
+private fun drawTextLine(canvas: Canvas, paint: Paint, text: String, x: Float, yPos: Float, lineHeight: Float): Float {
+    // Draw text on the canvas one line at a time with a new line
+    canvas.drawText(text, x, yPos, paint)
+    return yPos + lineHeight
+}
+
+private fun drawImageCentered(canvas: Canvas, paint: Paint, imagePath: String, leftMargin: Float, rightMargin: Float, yPos: Float): Float {
+    // Load the image
+    val bitmap = BitmapFactory.decodeFile(imagePath)
+
+    // Calculate x-position to center the image with left and right margins
+    val xPos = leftMargin + (canvas.width - leftMargin - rightMargin - bitmap.width) / 2f
+
+    // Draw image on the canvas
+    canvas.drawBitmap(bitmap, xPos, yPos, paint)
+
+    // Return the new y-position after drawing the image
+    return yPos + bitmap.height.toFloat()
+}
+
+
+
+

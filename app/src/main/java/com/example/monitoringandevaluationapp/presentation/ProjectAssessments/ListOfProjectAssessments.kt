@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -34,10 +36,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.monitoringandevaluationapp.data.LocationEntity
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import com.example.monitoringandevaluationapp.R
 import com.example.monitoringandevaluationapp.usecases.LocationViewModel
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +59,7 @@ fun ListOfProjectAssessments(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var searchQuery by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -115,8 +121,10 @@ fun ListOfProjectAssessments(
                             modifier = Modifier.clickable {
                                 // Trigger download PDF for the selected project
                                 try {
+                                    isLoading = true
                                     scope.launch {
                                         viewModel.downloadPDF(location)
+                                        isLoading = false
                                         Toast.makeText(
                                             context,
                                             "${location.projectName} pdf file has been downloaded successfully!!",
@@ -125,6 +133,11 @@ fun ListOfProjectAssessments(
                                     }
 
                                 } catch (e: Exception) {
+                                    Toast.makeText(
+                                        context,
+                                        "Failed to download project PDF",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                     Log.e("Download error", " Error while downloading project file", e)
                                 }
 
@@ -144,9 +157,37 @@ fun ListOfProjectAssessments(
                         )
 
                     }
+
+                    LoadingDialog(isLoading = isLoading, onDismiss = { isLoading = false })
                 }
             }
+
+
         }
+    }
+}
+
+@Composable
+fun LoadingDialog(isLoading: Boolean, onDismiss: () -> Unit) {
+    if (isLoading) {
+        AlertDialog(
+            onDismissRequest = { onDismiss() },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(32.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text("Downloading PDF...", fontWeight = FontWeight.Medium)
+                }
+            },
+            text = {},
+            confirmButton = {},
+            dismissButton = {}
+        )
     }
 }
 

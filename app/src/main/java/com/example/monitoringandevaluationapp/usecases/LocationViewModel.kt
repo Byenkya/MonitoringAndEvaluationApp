@@ -8,6 +8,8 @@ import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.os.Environment
+import android.text.Html
+import android.text.Spanned
 import android.util.Log
 import android.util.Size
 import androidx.lifecycle.LiveData
@@ -679,7 +681,9 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val pdfDocument = PdfDocument()
 
             // Set the page size (adjust as needed)
-            val pageSize = Size(600, 800)
+            val pageWidth = 600
+            val pageHeight = 800
+            val pageSize = Size(pageWidth, pageHeight)
 
             // Create a PageInfo with the desired page attributes
             val pageInfo = PdfDocument.PageInfo.Builder(pageSize.width, pageSize.height, 1).create()
@@ -705,34 +709,34 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val lineHeight = 20f // Adjust based on font size and spacing
 
             // Draw project details
-            yPos = drawTextLine(canvas, paint, "Group Information ${project.projectName}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Group Name: ${project.groupName}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Group Description: \n ${project.groupDescription}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Founding Date: ${project.foundingDate}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Registered Already?: ${project.registered}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Registration number: ${project.registrationNumber}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Registration Date: ${project.registrationDate}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Village: ${project.village}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Parish: ${project.parish}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Sub County: ${project.subCounty}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "County: ${project.county}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "District: ${project.district}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Sub Region: ${project.subRegion}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Country: ${project.country}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Created By: ${project.createdBy}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "CreatedOn: ${project.createdOn}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Membership Information", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(canvas, paint, "Group Information ${project.projectName}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Group Name: ${project.groupName}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Group Description: \n ${project.groupDescription}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Founding Date: ${project.foundingDate}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Registered Already?: ${project.registered}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Registration number: ${project.registrationNumber}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Registration Date: ${project.registrationDate}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Village: ${project.village}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Parish: ${project.parish}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Sub County: ${project.subCounty}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "County: ${project.county}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "District: ${project.district}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Sub Region: ${project.subRegion}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Country: ${project.country}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Created By: ${project.createdBy}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "CreatedOn: ${project.createdOn}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Membership Information", leftMargin, yPos, lineHeight, pageWidth)
             yPos += lineHeight
-            yPos = drawTextLine(canvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Uuid: ${project.uuid}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Membership Number: ${project.memberShipNumber} ${project.lastName}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Member Names: ${project.firstName} ${project.lastName} ${project.otherName}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Gender: ${project.gender}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "DOB: ${project.dob}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Paid Subscription: ${project.paid}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Member role: ${project.memberRole}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(canvas, paint, "Other Details: ${project.otherDetails}", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(canvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Uuid: ${project.uuid}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Membership Number: ${project.memberShipNumber} ${project.lastName}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Member Names: ${project.firstName} ${project.lastName} ${project.otherName}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Gender: ${project.gender}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "DOB: ${project.dob}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Paid Subscription: ${project.paid}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Member role: ${project.memberRole}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(canvas, paint, "Other Details: ${project.otherDetails}", leftMargin, yPos, lineHeight, pageWidth)
 
             yPos += lineHeight // Add space between sections
 
@@ -744,7 +748,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val secondCanvas = secondPage.canvas
             yPos = 40f
             // Draw member details
-            yPos = drawTextLine(secondCanvas, paint, "Member photo", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(secondCanvas, paint, "Member photo", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(secondCanvas, paint, project.memberPhotoPath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(secondPage)
 
@@ -755,29 +759,29 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
 
             // Draw member details
             yPos += imageMargin
-            yPos = drawTextLine(thirdCanvas, paint, "Project Information", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Project Number ${project.projectNumber}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Project Name ${project.projectName}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Project Focus ${project.projectFocus}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Start Date ${project.startDate}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Project Number ${project.endDate}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Expected Date ${project.expectedDate}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Funded By ${project.fundedBy}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Amount ${project.amount}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Team Leader ${project.teamLeader}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Team Leader Email ${project.teamLeaderEmail}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Team Leader Phone ${project.teamLeaderPhone}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Other contacts ${project.projectNumber}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Project Description ${project.projectNumber}", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(thirdCanvas, paint, "Project Information", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Project Number ${project.projectNumber}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Project Name ${project.projectName}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Project Focus ${project.projectFocus}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Start Date ${project.startDate}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Project Number ${project.endDate}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Expected Date ${project.expectedDate}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Funded By ${project.fundedBy}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Amount ${project.amount}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Team Leader ${project.teamLeader}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Team Leader Email ${project.teamLeaderEmail}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Team Leader Phone ${project.teamLeaderPhone}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Other contacts ${project.projectNumber}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Project Description ${project.projectNumber}", leftMargin, yPos, lineHeight, pageWidth)
             yPos += lineHeight
-            yPos = drawTextLine(thirdCanvas, paint, "Assessment Information", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Assessment Date ${project.assessmentDate}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Assessed By ${project.assessedBy}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Assess milestone ${project.assessMilestone}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Assessment For ${project.assessmentFor}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(thirdCanvas, paint, "Observations ${project.observation}", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(thirdCanvas, paint, "Assessment Information", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Assessment Date ${project.assessmentDate}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Assessed By ${project.assessedBy}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Assess milestone ${project.assessMilestone}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Assessment For ${project.assessmentFor}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Observations ${project.observation}", leftMargin, yPos, lineHeight, pageWidth)
             yPos += lineHeight
 
             // Finish the third page
@@ -787,7 +791,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val fourthPage = pdfDocument.startPage(pageInfo)
             val fourthCanvas = fourthPage.canvas
             yPos = 40f
-            yPos = drawTextLine(fourthCanvas, paint, "Project photo one", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(fourthCanvas, paint, "Project photo one", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(fourthCanvas, paint, project.photoOnePath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(fourthPage)
 
@@ -795,7 +799,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val fifthPage = pdfDocument.startPage(pageInfo)
             val fifthCanvas = fifthPage.canvas
             yPos = 40f
-            yPos = drawTextLine(fifthCanvas, paint, "Project photo Two", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(fifthCanvas, paint, "Project photo Two", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(fifthCanvas, paint, project.photoTwoPath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(fifthPage)
 
@@ -803,7 +807,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val sixPage = pdfDocument.startPage(pageInfo)
             val sixCanvas = sixPage.canvas
             yPos = 40f
-            yPos = drawTextLine(sixCanvas, paint, "Project photo Three", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(sixCanvas, paint, "Project photo Three", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(sixCanvas, paint, project.photoThreePath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(sixPage)
 
@@ -811,7 +815,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val seventhPage = pdfDocument.startPage(pageInfo)
             val seventhCanvas = seventhPage.canvas
             yPos = 40f
-            yPos = drawTextLine(seventhCanvas, paint, "Project photo Four", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(seventhCanvas, paint, "Project photo Four", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(seventhCanvas, paint, project.photoFourPath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(seventhPage)
 
@@ -820,27 +824,27 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val eightCanvas = eightPage.canvas
             yPos = 40f
             yPos += imageMargin
-            yPos = drawTextLine(eightCanvas, paint, "Latitude ${project.latitude}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Longitude ${project.longitude}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Altitude ${project.altitude}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "GPS CRS ${project.gpsCrs}", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(eightCanvas, paint, "Latitude ${project.latitude}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Longitude ${project.longitude}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Altitude ${project.altitude}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "GPS CRS ${project.gpsCrs}", leftMargin, yPos, lineHeight, pageWidth)
             yPos += lineHeight
-            yPos = drawTextLine(eightCanvas, paint, "Milestone Information", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Date ${project.milestoneDate}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Milestone Details ${project.milestoneDetails}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Milestone Target ${project.milestoneTarget}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Milestone Date ${project.milestoneTargetDate}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Assigned To ${project.assignedTo}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Status For ${project.status}", leftMargin, yPos, lineHeight)
-            yPos = drawTextLine(eightCanvas, paint, "Milestone comments ${project.mileStoneComments}", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(eightCanvas, paint, "Milestone Information", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Date ${project.milestoneDate}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Milestone Details ${project.milestoneDetails}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Milestone Target ${project.milestoneTarget}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Milestone Date ${project.milestoneTargetDate}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Assigned To ${project.assignedTo}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Status For ${project.status}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(eightCanvas, paint, "Milestone comments ${project.mileStoneComments}", leftMargin, yPos, lineHeight, pageWidth)
             pdfDocument.finishPage(eightPage)
 
             // creating ninth page
             val ninthPage = pdfDocument.startPage(pageInfo)
             val ninthCanvas = ninthPage.canvas
             yPos = 40f
-            yPos = drawTextLine(ninthCanvas, paint, "Milestone photo one", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(ninthCanvas, paint, "Milestone photo one", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(ninthCanvas, paint, project.milestonePhotoOnePath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(ninthPage)
 
@@ -848,7 +852,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val tenthPage = pdfDocument.startPage(pageInfo)
             val tenthCanvas = tenthPage.canvas
             yPos = 40f
-            yPos = drawTextLine(tenthCanvas, paint, "Milestone photo one", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(tenthCanvas, paint, "Milestone photo one", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(tenthCanvas, paint, project.milestonePhotoTwoPath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(tenthPage)
 
@@ -856,7 +860,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val eleventhPage = pdfDocument.startPage(pageInfo)
             val eleventhCanvas = eleventhPage.canvas
             yPos = 40f
-            yPos = drawTextLine(eleventhCanvas, paint, "Milestone photo Two", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(eleventhCanvas, paint, "Milestone photo Two", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(eleventhCanvas, paint, project.milestonePhotoTwoPath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(eleventhPage)
 
@@ -864,7 +868,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val twelfthPage = pdfDocument.startPage(pageInfo)
             val twelfthPageCanvas = twelfthPage.canvas
             yPos = 40f
-            yPos = drawTextLine(twelfthPageCanvas, paint, "Milestone photo Three", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(twelfthPageCanvas, paint, "Milestone photo Three", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(twelfthPageCanvas, paint, project.milestonePhotoThreePath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(twelfthPage)
 
@@ -872,7 +876,7 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             val thirteenthPage = pdfDocument.startPage(pageInfo)
             val thirteenthPageCanvas = thirteenthPage.canvas
             yPos = 40f
-            yPos = drawTextLine(thirteenthPageCanvas, paint, "Milestone photo Four", leftMargin, yPos, lineHeight)
+            yPos = drawTextLine(thirteenthPageCanvas, paint, "Milestone photo Four", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawImageCentered(thirteenthPageCanvas, paint, project.milestonePhotoFourPath, leftMargin, rightMargin, yPos)
             pdfDocument.finishPage(thirteenthPage)
 
@@ -890,15 +894,57 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
     }
 }
 
-private fun drawTextLine(canvas: Canvas, paint: Paint, text: String, x: Float, yPos: Float, lineHeight: Float): Float {
-    // Draw text on the canvas one line at a time with a new line
-    canvas.drawText(text, x, yPos, paint)
-    return yPos + lineHeight
+private fun drawTextLine(
+    canvas: Canvas,
+    paint: Paint,
+    text: String,
+    x: Float,
+    yPos: Float,
+    lineHeight: Float,
+    maxWidth: Int
+): Float {
+    // Check if the width of the text exceeds the available width
+    if (paint.measureText(text) > maxWidth) {
+        var remainingText = text
+        var currentYPos = yPos
+
+        // Draw each line until there's no more text to draw
+        while (remainingText.isNotEmpty()) {
+            val adjustedWidth = 530
+            // Calculate the maximum number of characters that fit within maxWidth
+            val maxChars = paint.breakText(
+                remainingText,
+                true,
+                adjustedWidth.toFloat(),
+                null
+            )
+
+            // Draw the portion of the text that fits within maxWidth
+            canvas.drawText(remainingText.substring(0, maxChars), x, currentYPos, paint)
+
+            // Move to the next line
+            currentYPos += lineHeight
+
+            // Remove the drawn portion from the remaining text
+            remainingText = remainingText.substring(maxChars).trimStart()
+        }
+
+        return currentYPos
+    } else {
+        // Draw the original text if it fits within the available width
+        canvas.drawText(text, x, yPos, paint)
+        return yPos + lineHeight
+    }
 }
 
-
-
-private fun drawImageCentered(canvas: Canvas, paint: Paint, imagePath: String, leftMargin: Float, rightMargin: Float, yPos: Float): Float {
+private fun drawImageCentered(
+    canvas: Canvas,
+    paint: Paint,
+    imagePath: String,
+    leftMargin: Float,
+    rightMargin: Float,
+    yPos: Float
+): Float {
     // Load the image
     val originalBitmap = BitmapFactory.decodeFile(imagePath)
 
@@ -916,7 +962,12 @@ private fun drawImageCentered(canvas: Canvas, paint: Paint, imagePath: String, l
     val xPos = leftMargin + (canvas.width - leftMargin - rightMargin - scaledWidth) / 2f
 
     // Create a scaled bitmap
-    val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth.toInt(), (originalBitmap.height * scaleFactor).toInt(), true)
+    val scaledBitmap = Bitmap.createScaledBitmap(
+        originalBitmap,
+        scaledWidth.toInt(),
+        (originalBitmap.height * scaleFactor).toInt(),
+        true
+    )
 
     // Draw scaled image on the canvas
     canvas.drawBitmap(scaledBitmap, xPos, yPos, paint)

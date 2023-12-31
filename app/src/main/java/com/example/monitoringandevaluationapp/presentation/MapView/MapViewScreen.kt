@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +77,7 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
         fastestInterval = 2000L
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
+
 
     // Create LocationCallback
     val locationCallback = object : LocationCallback() {
@@ -148,7 +150,7 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
     }
 
     if (hasLocationPermission) {
-        Log.d("nnn", "Permission granted")
+        Log.d("Success", "Permission granted")
         // Get last known location
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
@@ -162,13 +164,22 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
             Looper.getMainLooper()
         )
     } else {
-        Log.d("nnn", "Permission not granted")
+        Log.d("Success", "Permission not granted")
         // Request location permission
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
             LOCATION_REQUEST_CODE
         )
+    }
+
+    LaunchedEffect(locationViewModel, userLocation) {
+        locationViewModel.allLocations.observeForever { newList ->
+            locationEntities.value = newList
+            mapView.getMapAsync { googleMap ->
+                setupGoogleMap(googleMap, userLocation, locationEntities)
+            }
+        }
     }
 
     DisposableEffect(Unit) {
@@ -193,16 +204,6 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
                 mapView.getMapAsync { googleMap ->
                     // First setup
                     setupGoogleMap(googleMap, userLocation, locationEntities)
-
-                    // Observe changes in saved locations and update the map
-                    val observer = Observer<List<LocationEntity>> { newList ->
-                        locationEntities.value = newList
-                        setupGoogleMap(googleMap, userLocation, locationEntities)
-                    }
-                    if (locationViewModel.allLocations.value != null) {
-                        locationViewModel.allLocations.observe(lifecycleOwner, observer)
-                    }
-
 
                 }
             } catch (e: Exception) {
@@ -246,7 +247,6 @@ fun setupGoogleMap(
         googleMap.clear()
         if (locationEntities.value.isNotEmpty()) {
             locationEntities.value.forEach { entity ->
-                Log.e("Debug", "Entity: $entity")
                 val latLng = LatLng(entity.latitude, entity.longitude)
                 googleMap.addMarker(MarkerOptions().position(latLng).title(entity.projectName))
             }

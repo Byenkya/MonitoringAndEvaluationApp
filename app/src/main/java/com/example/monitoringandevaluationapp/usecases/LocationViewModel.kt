@@ -753,7 +753,9 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             pdfDocument.finishPage(secondPage)
 
             // create third page
-            val thirdPage = pdfDocument.startPage(pageInfo)
+            val pageSizeThird = Size(pageWidth, 900)
+            val pageInfoThird = PdfDocument.PageInfo.Builder(pageSizeThird.width, pageSizeThird.height, 1).create()
+            val thirdPage = pdfDocument.startPage(pageInfoThird)
             val thirdCanvas = thirdPage.canvas
             yPos = 40f
 
@@ -772,8 +774,8 @@ private suspend fun generatePdfForProject(project: LocationEntity) {
             yPos = drawTextLine(thirdCanvas, paint, "Team Leader ${project.teamLeader}", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawTextLine(thirdCanvas, paint, "Team Leader Email ${project.teamLeaderEmail}", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawTextLine(thirdCanvas, paint, "Team Leader Phone ${project.teamLeaderPhone}", leftMargin, yPos, lineHeight, pageWidth)
-            yPos = drawTextLine(thirdCanvas, paint, "Other contacts ${project.projectNumber}", leftMargin, yPos, lineHeight, pageWidth)
-            yPos = drawTextLine(thirdCanvas, paint, "Project Description ${project.projectNumber}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Other contacts ${project.otherProjectContacts}", leftMargin, yPos, lineHeight, pageWidth)
+            yPos = drawTextLine(thirdCanvas, paint, "Project Description ${project.projectDescription}", leftMargin, yPos, lineHeight, pageWidth)
             yPos += lineHeight
             yPos = drawTextLine(thirdCanvas, paint, "Assessment Information", leftMargin, yPos, lineHeight, pageWidth)
             yPos = drawTextLine(thirdCanvas, paint, "----------------------------------------------------------------", leftMargin, yPos, lineHeight, pageWidth)

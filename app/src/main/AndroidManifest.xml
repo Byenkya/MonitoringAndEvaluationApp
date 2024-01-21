@@ -6,10 +6,12 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-feature android:name="android.hardware.camera.any"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:name=".presentation.sigin.App"
+        android:name="com.example.monitoringandevaluationapp.presentation.ui.sigin.App"
         android:allowBackup="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"

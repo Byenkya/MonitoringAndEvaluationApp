@@ -1,5 +1,6 @@
 package com.example.monitoringandevaluationapp
 
+import RetrofitClient
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
@@ -38,20 +39,22 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.monitoringandevaluationapp.data.AppDatabase
-import com.example.monitoringandevaluationapp.presentation.CaptureData.CaptureImageScreen
-import com.example.monitoringandevaluationapp.presentation.MapView.MapViewScreen
-import com.example.monitoringandevaluationapp.presentation.ProjectAssessment.ProjectAssessment
-import com.example.monitoringandevaluationapp.presentation.ProjectAssessments.ListOfProjectAssessments
-import com.example.monitoringandevaluationapp.presentation.ProjectDetails.ProjectDetails
-import com.example.monitoringandevaluationapp.presentation.SavedData.SavedImageList
-import com.example.monitoringandevaluationapp.presentation.sigin.GoogleAuthUiClient
-import com.example.monitoringandevaluationapp.presentation.sigin.LoginScreen
-import com.example.monitoringandevaluationapp.presentation.sigin.SignInViewModel
-import com.example.monitoringandevaluationapp.repository.LocationRepository
-import com.example.monitoringandevaluationapp.usecases.LocationViewModel
+import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.CaptureImageScreen
+import com.example.monitoringandevaluationapp.presentation.ui.MapView.MapViewScreen
+import com.example.monitoringandevaluationapp.presentation.ui.ProjectAssessment.ProjectAssessment
+import com.example.monitoringandevaluationapp.presentation.ui.ProjectAssessments.ListOfProjectAssessments
+import com.example.monitoringandevaluationapp.presentation.ui.ProjectDetails.ProjectDetails
+import com.example.monitoringandevaluationapp.presentation.ui.SavedData.SavedImageList
+import com.example.monitoringandevaluationapp.presentation.ui.sigin.GoogleAuthUiClient
+import com.example.monitoringandevaluationapp.presentation.ui.sigin.LoginScreen
+import com.example.monitoringandevaluationapp.presentation.ui.sigin.SignInViewModel
+import com.example.monitoringandevaluationapp.data.repository.LocationRepository
+import com.example.monitoringandevaluationapp.data.repository.PostProjectRepository
+import com.example.monitoringandevaluationapp.data.repository.savedAssessmentRepository
+import com.example.monitoringandevaluationapp.presentation.ViewModel.LocationViewModel
+import com.example.monitoringandevaluationapp.presentation.ViewModel.SavedAssessmentViewModel
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
-
 class MainActivity : ComponentActivity() {
     private val googleAuthUiClient by lazy {
         try {
@@ -66,6 +69,7 @@ class MainActivity : ComponentActivity() {
     }
 
     lateinit var locationViewModel: LocationViewModel
+    lateinit var savedAssessmentViewModel: SavedAssessmentViewModel
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
@@ -74,6 +78,8 @@ class MainActivity : ComponentActivity() {
         // Initialize LocationDao and LocationRepository (this is pseudo-code)
         val locationDao = AppDatabase.getDatabase(this).locationDao()
         val locationRepository = LocationRepository(locationDao)
+        val savedAssessmentDao = AppDatabase.getDatabase(this).savedAssessmentDao()
+        val savedAssessmentRepository = savedAssessmentRepository(savedAssessmentDao)
 
 
         // Initialize the ViewModel
@@ -85,6 +91,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )[LocationViewModel::class.java]
+
+        savedAssessmentViewModel = ViewModelProvider(
+            this,
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return SavedAssessmentViewModel(savedAssessmentRepository) as T
+                }
+            }
+        )[SavedAssessmentViewModel::class.java]
 
         setContent {
             val navController = rememberNavController()
@@ -106,7 +121,8 @@ class MainActivity : ComponentActivity() {
                     lifecycleScope,
                     googleAuthUiClient,
                     navController,
-                    locationViewModel
+                    locationViewModel,
+                    savedAssessmentViewModel
                 )
             }
         }
@@ -171,6 +187,7 @@ fun AppNavigation(
     googleAuthUiClient: GoogleAuthUiClient,
     navController: NavHostController,
     locationViewModel: LocationViewModel,
+    savedAssessmentViewModel: SavedAssessmentViewModel
 ) {
     NavHost(navController = navController, startDestination = "mapView") {
 
@@ -234,12 +251,20 @@ fun AppNavigation(
             // Retrieve the corresponding LocationEntity based on locationId
             val projectAssessments = locationViewModel.allLocations.value
                 ?.filter { it.projectName == projectName }
+
+            // Create an instance of PostProjectRepository (replace with your actual PostProjectRepository)
+            val postProjectRepository = PostProjectRepository(RetrofitClient.apiService)
+
             // Pass the LocationEntity to the ProjectDetails composable
             if (!projectAssessments.isNullOrEmpty()) {
+                val assessmentCount = projectAssessments.size
                 ListOfProjectAssessments(
                     navController = navController,
                     assessments = projectAssessments,
-                    viewModel = locationViewModel
+                    assessmentCount = assessmentCount,
+                    viewModel = locationViewModel,
+                    savedAssessmentViewModel = savedAssessmentViewModel,
+                    projectRepository = postProjectRepository
                 )
             }
         }
@@ -249,7 +274,7 @@ fun AppNavigation(
             val locationId = backStackEntry.arguments?.getString("locationId")
             // Retrieve the corresponding LocationEntity based on locationId
             val locationEntity = locationViewModel.allLocations.value?.firstOrNull {
-                it.id == locationId?.toInt()
+                it.id == locationId
             }
             // Pass the LocationEntity to the ProjectDetails composable
             if (locationEntity != null) {

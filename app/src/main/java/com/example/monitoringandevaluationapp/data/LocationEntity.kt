@@ -2,10 +2,11 @@ package com.example.monitoringandevaluationapp.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 @Entity
 data class LocationEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey val id: String,
     val groupName: String,
     val groupDescription: String,
     val foundingDate: String,

@@ -102,8 +102,9 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.4.0")
 
     //hilt
-    implementation("com.google.dagger:hilt-android:2.45")
-    kapt("com.google.dagger:hilt-android-compiler:2.41")
+    implementation("com.google.dagger:hilt-android:2.38.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.38.1")
+//    kapt("androidx.hilt:hilt-common:1.1.0")
 
     //observe state
     implementation("androidx.compose.runtime:runtime:1.5.4")
@@ -130,6 +131,12 @@ dependencies {
     // glide
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
 
+    // retrofit
+    implementation("com.squareup.moshi:moshi:1.12.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation ("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 
 
 

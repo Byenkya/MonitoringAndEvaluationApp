@@ -15,4 +15,10 @@ interface LocationDao {
 
     @Query("SELECT * FROM locationEntity")
     fun getAllLocations(): LiveData<List<LocationEntity>>
+
+    @Query("SELECT * FROM locationentity WHERE id = :locationId")
+    fun getLocationById(locationId: String): LiveData<LocationEntity>
+
+    @Query("DELETE FROM locationEntity WHERE id = :locationId")
+    suspend fun deleteLocationById(locationId: String)
 }

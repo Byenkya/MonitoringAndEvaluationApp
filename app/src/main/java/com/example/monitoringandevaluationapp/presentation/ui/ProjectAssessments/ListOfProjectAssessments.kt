@@ -39,6 +39,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -70,6 +71,8 @@ fun ListOfProjectAssessments(
     var isLoading by remember { mutableStateOf(false) }
     var isUploading by remember { mutableStateOf(false) }
     var apiResponse = ApiResponse("")
+    // Observe download status
+    val downloadStatus by viewModel.downloadStatus.collectAsState()
 
     Column(
         Modifier
@@ -213,11 +216,26 @@ fun ListOfProjectAssessments(
                                     scope.launch {
                                         viewModel.downloadPDF(location)
                                         isLoading = false
-                                        Toast.makeText(
-                                            context,
-                                            "Message: ${location.projectName} Assessment has been downloaded successfully!!",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        // Observe download status
+                                        downloadStatus.let { success ->
+                                            if (success) {
+                                                // PDF download successful
+                                                isLoading = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Message: ${location.projectName} Assessment has been downloaded successfully!!",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            } else {
+                                                // PDF download failed
+                                                isLoading = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Error: Failed to download PDF",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        }
                                     }
 
                                 } catch (e: Exception) {

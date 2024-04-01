@@ -15,8 +15,8 @@ class PostProjectAssetRepository(private val apiService: ApiService) {
     suspend fun saveAsset(asset: Asset): ApiResponse {
         try {
             val images = mutableListOf<MultipartBody.Part>()
-            val assetPhoto1 = File(asset.assetPhoto1)
-            val assetPhoto2 = File(asset.assetPhoto2)
+            val assetPhoto1 = File(asset.asset_photo1)
+            val assetPhoto2 = File(asset.asset_photo2)
             val requestBody1 = RequestBody.create("image/*".toMediaTypeOrNull(), assetPhoto1)
             val imagePart1 = MultipartBody.Part.createFormData("images", assetPhoto1.name, requestBody1)
             val requestBody2 = RequestBody.create("image/*".toMediaTypeOrNull(), assetPhoto2)

@@ -136,33 +136,34 @@ data class Project(
 )
 
 data class Asset(
-    @Json(name = "id")
-    val id: String,
-    @Json(name = "geom")
+    val id: Long,
     val geom: String,
     val uuid: String,
-    @Json(name = "groupName")
-    val groupName: String,
-    @Json(name = "groupID")
-    val groupID: Long,
-    @Json(name = "lat")
-    val lat: Double,
-    @Json(name = "long")
-    val long: Double,
-    @Json(name = "assetID")
-    val assetID: Int,
-    @Json(name = "dateAcquired")
-    val dateAcquired: String,
-    @Json(name = "assetName")
-    val assetName: String,
-    @Json(name = "personInCharge")
-    val personInCharge: String,
-    @Json(name = "assetDescription")
-    val assetDescription: String,
-    @Json(name = "assetPhoto1")
-    val assetPhoto1: String,
-    @Json(name = "assetPhoto2")
-    val assetPhoto2: String,
-    @Json(name = "createdBy")
-    val createdBy: String
+    @Json(name = "group_name")
+    val group_name: String,
+    @Json(name = "group_id")
+    val group_id: Double,
+    @Json(name = "lat_x")
+    val lat_x: Double,
+    @Json(name = "lon_y")
+    val lon_y: Double,
+    @Json(name = "asset_id")
+    val asset_id: String,
+    @Json(name = "date_acquired")
+    val date_acquired: String,
+    @Json(name = "asset_name")
+    val asset_name: String,
+    @Json(name = "person_incharge")
+    val person_incharge: String,
+    @Json(name = "asset_description")
+    val asset_description: String,
+    @Json(name = "asset_photo1")
+    val asset_photo1: String,
+    @Json(name = "asset_photo2")
+    val asset_photo2: String,
+    @Json(name = "created_by")
+    val created_by: String,
+    val date_created: String,
+    val updated_by: String,
+    val date_updated: String
 )

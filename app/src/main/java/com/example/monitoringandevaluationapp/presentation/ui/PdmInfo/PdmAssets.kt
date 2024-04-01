@@ -54,6 +54,8 @@ import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.saveFi
 import com.example.monitoringandevaluationapp.presentation.ui.ProjectAssessments.LoadingDialog
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.*
 
 @Composable
@@ -282,26 +284,37 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
                     errorMessage.value = missingFieldsMessage
                 } else {
                     try {
+                        // Get the current date and time
+                        val currentDate = Date()
+
+                        // Define a date format
+                        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+                        // Format the current date and time into a string
+                        val formattedDate = dateFormat.format(currentDate)
+
                         val assetPhotoOne = saveFileToDownloads(context, assetPhotoOneUri!!)
                         val assetPhotoTwo = saveFileToDownloads(context, assetPhotoTwoUri!!)
 
                         val asset = Asset(
-                            id = id,
+                            id = id.toLong(),
                             geom = geom,
                             uuid = uuid,
-                            groupName = groupName,
-                            groupID = groupId.toLong(),
-                            lat = UserLocation.lat,
-                            long = UserLocation.long,
-                            assetID = assetId.toInt(),
-                            dateAcquired = Dates.dateAcquired,
-                            assetName = assetName,
-                            personInCharge = personInCharge,
-                            assetDescription = assetDescription,
-                            assetPhoto1 = assetPhotoOne,
-                            assetPhoto2 = assetPhotoTwo,
-                            createdBy = createdBy
-
+                            group_name = groupName,
+                            group_id = groupId.toDouble(),
+                            lat_x = UserLocation.lat,
+                            lon_y = UserLocation.long,
+                            asset_id = assetId,
+                            date_acquired = Dates.dateAcquired,
+                            asset_name = assetName,
+                            person_incharge = personInCharge,
+                            asset_description = assetDescription,
+                            asset_photo1 = assetPhotoOne,
+                            asset_photo2 = assetPhotoTwo,
+                            created_by = createdBy,
+                            date_created = formattedDate,
+                            updated_by = formattedDate,
+                            date_updated = formattedDate
                         )
 
                         val postProjectAssetRepository = PostProjectAssetRepository(RetrofitClient.apiService)
@@ -329,6 +342,9 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
                                     Toast.LENGTH_LONG
                                 ).show()
                                 navController.navigate("mapView")
+                            } else {
+                                isUploading = false
+                                Toast.makeText(context, "Error: ${apiResponse.message}", Toast.LENGTH_LONG).show()
                             }
                         }
                     } catch(e: Exception) {

@@ -278,6 +278,7 @@ fun DateFieldWithPicker(
                 "Assessment Date" -> dates.assessmentDate
                 "Date" -> dates.milestoneAssessmentDate
                 "Target Date" -> dates.targetDate
+                "Date Acquired" -> dates.dateAcquired
                 else -> "four"
             },
             fontWeight = FontWeight.Bold
@@ -321,6 +322,10 @@ fun DateFieldWithPicker(
                     }
                     "Target Date" -> {
                         dates.targetDate = it
+                    }
+
+                    "Date Acquired" -> {
+                        dates.dateAcquired = it
                     }
                 }
                 date.value = it

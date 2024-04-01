@@ -28,4 +28,11 @@ interface ApiService {
         @Body projects: List<Project>,
         @Part images: List<MultipartBody.Part>
     ): ApiResponse
+
+    @POST("/saveAsset")
+    @Multipart
+    suspend fun saveAsset(
+        @Part asset: MultipartBody.Part,
+        @Part images: List<MultipartBody.Part>
+    ): ApiResponse
 }

@@ -134,3 +134,35 @@ data class Project(
     @Json(name = "milestonePhotoFourPath")
     val milestonePhotoFourPath: String,
 )
+
+data class Asset(
+    @Json(name = "id")
+    val id: String,
+    @Json(name = "geom")
+    val geom: String,
+    val uuid: String,
+    @Json(name = "groupName")
+    val groupName: String,
+    @Json(name = "groupID")
+    val groupID: Long,
+    @Json(name = "lat")
+    val lat: Double,
+    @Json(name = "long")
+    val long: Double,
+    @Json(name = "assetID")
+    val assetID: Int,
+    @Json(name = "dateAcquired")
+    val dateAcquired: String,
+    @Json(name = "assetName")
+    val assetName: String,
+    @Json(name = "personInCharge")
+    val personInCharge: String,
+    @Json(name = "assetDescription")
+    val assetDescription: String,
+    @Json(name = "assetPhoto1")
+    val assetPhoto1: String,
+    @Json(name = "assetPhoto2")
+    val assetPhoto2: String,
+    @Json(name = "createdBy")
+    val createdBy: String
+)

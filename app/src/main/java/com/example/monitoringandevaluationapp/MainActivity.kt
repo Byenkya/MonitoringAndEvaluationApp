@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
@@ -28,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -52,7 +54,9 @@ import com.example.monitoringandevaluationapp.data.repository.LocationRepository
 import com.example.monitoringandevaluationapp.data.repository.PostProjectRepository
 import com.example.monitoringandevaluationapp.data.repository.savedAssessmentRepository
 import com.example.monitoringandevaluationapp.presentation.ViewModel.LocationViewModel
+import com.example.monitoringandevaluationapp.presentation.ViewModel.PDMViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.SavedAssessmentViewModel
+import com.example.monitoringandevaluationapp.presentation.ui.PdmInfo.PdmScreen
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
@@ -69,6 +73,7 @@ class MainActivity : ComponentActivity() {
     }
 
     lateinit var locationViewModel: LocationViewModel
+    lateinit var pdmViewModel: PDMViewModel
     lateinit var savedAssessmentViewModel: SavedAssessmentViewModel
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -101,6 +106,15 @@ class MainActivity : ComponentActivity() {
             }
         )[SavedAssessmentViewModel::class.java]
 
+        pdmViewModel = ViewModelProvider(
+            this,
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return PDMViewModel() as T
+                }
+            }
+        )[PDMViewModel::class.java]
+
         setContent {
             val navController = rememberNavController()
 
@@ -122,6 +136,7 @@ class MainActivity : ComponentActivity() {
                     googleAuthUiClient,
                     navController,
                     locationViewModel,
+                    pdmViewModel,
                     savedAssessmentViewModel
                 )
             }
@@ -137,7 +152,7 @@ fun AppBottomNavigation(navController: NavHostController) {
     BottomNavigation (backgroundColor = Color(0xFF6200EA)) {
         BottomNavigationItem(
             icon = { Icon(Icons.Default.Home, contentDescription = null, tint = Color.White) },
-            label = { Text("Map View", color = Color.White) },
+            label = { Text("Map View", color = Color.White, fontSize = 8.sp) },
             selected = currentRoute == "mapView",
             onClick = {
                 if (currentRoute != "mapView") {
@@ -147,7 +162,7 @@ fun AppBottomNavigation(navController: NavHostController) {
         )
         BottomNavigationItem(
             icon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.White) },
-            label = { Text("Capture", color = Color.White) },
+            label = { Text("Capture", color = Color.White, fontSize = 8.sp) },
             selected = currentRoute == "captureImage",
             onClick = {
                 if (currentRoute != "captureImage") {
@@ -157,7 +172,7 @@ fun AppBottomNavigation(navController: NavHostController) {
         )
         BottomNavigationItem(
             icon = { Icon(Icons.Default.Info, contentDescription = null, tint = Color.White) },
-            label = { Text("Projects", color = Color.White) },
+            label = { Text("Projects", color = Color.White, fontSize = 8.sp) },
             selected = currentRoute == "SavedImages",
             onClick = {
                 if (currentRoute != "SavedImages") {
@@ -169,10 +184,21 @@ fun AppBottomNavigation(navController: NavHostController) {
         BottomNavigationItem(
             selected = currentRoute == "projectAssessment",
             icon = { Icon(Icons.Default.List, contentDescription = null, tint = Color.White) },
-            label = { Text("Assess", color = Color.White) },
+            label = { Text("Assess", color = Color.White, fontSize = 8.sp) },
             onClick = {
                 if (currentRoute != "projectAssessment") {
                     navController.navigate("projectAssessment")
+                }
+            }
+        )
+
+        BottomNavigationItem(
+            selected = currentRoute == "pdmInfo",
+            icon = { Icon(Icons.Default.Add, contentDescription = null, tint = Color.White) },
+            label = { Text("Register", color = Color.White, fontSize = 8.sp) },
+            onClick = {
+                if (currentRoute != "pdmInfo") {
+                    navController.navigate("pdmInfo")
                 }
             }
         )
@@ -187,6 +213,7 @@ fun AppNavigation(
     googleAuthUiClient: GoogleAuthUiClient,
     navController: NavHostController,
     locationViewModel: LocationViewModel,
+    pdmViewModel: PDMViewModel,
     savedAssessmentViewModel: SavedAssessmentViewModel
 ) {
     NavHost(navController = navController, startDestination = "mapView") {
@@ -284,6 +311,10 @@ fun AppNavigation(
 
         composable("projectAssessment") {
             ProjectAssessment(navController = navController, locationViewModel = locationViewModel)
+        }
+
+        composable("pdmInfo") {
+            PdmScreen(navController = navController, pdmViewModel = pdmViewModel)
         }
     }
 }

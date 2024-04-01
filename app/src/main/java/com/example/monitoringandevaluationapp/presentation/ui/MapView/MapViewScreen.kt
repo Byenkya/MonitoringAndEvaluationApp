@@ -33,6 +33,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.monitoringandevaluationapp.data.LocationEntity
+import com.example.monitoringandevaluationapp.data.UserLocation
 import com.example.monitoringandevaluationapp.presentation.ViewModel.LocationViewModel
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -85,6 +86,8 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
             for (location in p0.locations) {
                 userLocation = LatLng(location.latitude, location.longitude)
                  locationViewModel.updateUserLocation(userLocation)
+                 UserLocation.lat = location.latitude
+                UserLocation.long = location.longitude
                 Log.d("FusedLocation", "locations updated: ${location.latitude}, ${location.longitude}")
             }
         }

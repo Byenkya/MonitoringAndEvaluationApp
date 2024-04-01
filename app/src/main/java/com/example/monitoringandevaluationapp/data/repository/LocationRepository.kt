@@ -23,15 +23,15 @@ class LocationRepository(private val locationDao: LocationDao) {
 
     suspend fun deleteLocation(location: LocationEntity) {
         // delete images from the system
-        deleteImages(location.memberPhotoPath)
+//        deleteImages(location.memberPhotoPath)
         deleteImages(location.photoOnePath)
         deleteImages(location.photoTwoPath)
         deleteImages(location.photoThreePath)
         deleteImages(location.photoFourPath)
-        deleteImages(location.milestonePhotoOnePath)
-        deleteImages(location.milestonePhotoTwoPath)
-        deleteImages(location.milestonePhotoThreePath)
-        deleteImages(location.milestonePhotoFourPath)
+//        deleteImages(location.milestonePhotoOnePath)
+//        deleteImages(location.milestonePhotoTwoPath)
+//        deleteImages(location.milestonePhotoThreePath)
+//        deleteImages(location.milestonePhotoFourPath)
 
         // finally delete the location
         locationDao.deleteLocationById(location.id)

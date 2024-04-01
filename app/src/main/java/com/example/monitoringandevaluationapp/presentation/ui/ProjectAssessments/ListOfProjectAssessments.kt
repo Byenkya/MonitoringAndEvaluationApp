@@ -193,6 +193,8 @@ fun ListOfProjectAssessments(
                                                 "Failed to upload project Assessment: ${apiResponse.message}",
                                                 Toast.LENGTH_LONG
                                             ).show()
+
+                                            Log.e(">>>Upload error", " Failed to upload project Assessment ${apiResponse.message}")
                                         }
                                     }
                                 } catch (e: Exception) {

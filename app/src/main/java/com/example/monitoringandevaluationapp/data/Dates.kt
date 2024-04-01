@@ -11,4 +11,5 @@ object Dates {
     var assessmentDate = ""
     var milestoneAssessmentDate = ""
     var targetDate = ""
+    var dateAcquired = ""
 }

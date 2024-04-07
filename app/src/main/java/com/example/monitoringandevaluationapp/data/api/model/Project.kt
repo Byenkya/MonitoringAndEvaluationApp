@@ -214,3 +214,41 @@ data class Beneficiary(
     @Json(name = "lon_y")
     val lon_y: Double
 )
+
+data class Enterprise(
+    val id: Long,
+    val geom: String,
+    val uuid: String,
+    @Json(name = "group_name")
+    val group_name: String,
+    @Json(name = "group_id")
+    val group_id: Double,
+    @Json(name = "reg_status")
+    val reg_status: String,
+    @Json(name = "activation")
+    val activation: String,
+    @Json(name = "fundig_typ")
+    val fundig_typ: String,
+    @Json(name = "amount")
+    val amount: String,
+    @Json(name = "district")
+    val district: String,
+    @Json(name = "subcounty")
+    val subcounty: String,
+    @Json(name = "parish")
+    val parish: String,
+    @Json(name = "village")
+    val village: String,
+    @Json(name = "created_by")
+    val created_by: String,
+    @Json(name = "date_creat")
+    val date_creat: String,
+    @Json(name = "updated_by")
+    val updated_by: String,
+    @Json(name = "date_updat")
+    val date_updat: String,
+    @Json(name = "lat_x")
+    val lat_x: Double,
+    @Json(name = "lon_y")
+    val lon_y: Double
+)

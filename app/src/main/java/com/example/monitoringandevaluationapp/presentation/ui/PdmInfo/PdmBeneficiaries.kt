@@ -119,7 +119,7 @@ fun BeneficiaryContentTab(navController: NavController) {
 
         DropdownWithLabel(
             label = "Gender",
-            suggestions = listOf("Male", "Female"),
+            suggestions = listOf("M", "F"),
             selectedText = gender,
             onTextSelected = { gender = it },
         )
@@ -334,6 +334,7 @@ fun BeneficiaryContentTab(navController: NavController) {
 
                         val postProjectBeneficiaryRepository = PostProjectBeneficiaryRepository(RetrofitClient.apiService)
                         val fetchAndPostBeneficiaryUseCaseImpl = FetchAndPostBeneficiaryUseCaseImpl(beneficiary, postProjectBeneficiaryRepository)
+
                         scope.launch {
                             isUploading = true
                             apiResponse = fetchAndPostBeneficiaryUseCaseImpl.execute()
@@ -373,7 +374,7 @@ fun BeneficiaryContentTab(navController: NavController) {
                         }
                     } catch(e: Exception) {
                         Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                        Log.e("Asset Capture", "saving data failed due to ${e.message}")
+                        Log.e("Beneficiary Capture", "saving data failed due to ${e.message}")
                         throw RuntimeException("Capture: ${e.message}")
                     }
                 }
@@ -395,7 +396,5 @@ fun BeneficiaryContentTab(navController: NavController) {
             msg = "Uploading Beneficiary...",
             onDismiss = { isUploading = false}
         )
-
-
     }
 }

@@ -1,6 +1,7 @@
 package com.example.monitoringandevaluationapp.data
 
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
+import com.example.monitoringandevaluationapp.data.api.model.Enterprise
 import com.example.monitoringandevaluationapp.data.api.model.Project
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -40,6 +41,12 @@ interface ApiService {
     @Multipart
     suspend fun saveBeneficiary(
         @Part beneficiary: MultipartBody.Part
+    ): ApiResponse
+
+    @POST("/saveEnterprise")
+    @Multipart
+    suspend fun saveEnterprise(
+        @Part enterprise: MultipartBody.Part
     ): ApiResponse
 
 }

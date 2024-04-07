@@ -111,58 +111,60 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
     ) {
         TextField(
             value = id,
-            onValueChange = { id = it },
+            onValueChange = { newValue -> id = newValue.filter { it.isDigit() } },
             label = { Text("ID") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
         )
 
-        TextField(
-            value = geom,
-            onValueChange = { geom = it },
-            label = { Text("Geom") },
-            modifier = Modifier.fillMaxWidth()
-        )
+//        TextField(
+//            value = geom,
+//            onValueChange = { geom = it },
+//            label = { Text("Geom") },
+//            modifier = Modifier.fillMaxWidth()
+//        )
 
-        androidx.compose.material3.Text(
-            text = "Uuid: $uuid", fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
-        )
+//        androidx.compose.material3.Text(
+//            text = "Uuid: $uuid", fontWeight = FontWeight.Bold,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(4.dp)
+//        )
 
         TextField(
             value = groupName,
             onValueChange = { groupName = it },
             label = { Text("Group Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         )
 
         TextField(
             value = groupId,
-            onValueChange = { groupId = it },
+            onValueChange = { newValue -> groupId = newValue.filter { it.isDigit() } },
             label = { Text("Group ID") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
         )
 
-        androidx.compose.material3.Text(
-            text = "Lat X: ${UserLocation.lat}", fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
-        )
-
-        androidx.compose.material3.Text(
-            text = "Long Y: ${UserLocation.long}", fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
-        )
+//        androidx.compose.material3.Text(
+//            text = "Lat X: ${UserLocation.lat}", fontWeight = FontWeight.Bold,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(4.dp)
+//        )
+//
+//        androidx.compose.material3.Text(
+//            text = "Long Y: ${UserLocation.long}", fontWeight = FontWeight.Bold,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(4.dp)
+//        )
 
         TextField(
             value = assetId,
             onValueChange = { assetId = it },
             label = { Text("Asset ID") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         )
 
         DateFieldWithPicker(
@@ -178,21 +180,21 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
             value = assetName,
             onValueChange = { assetName = it },
             label = { Text("Asset Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         )
 
         TextField(
             value = personInCharge,
             onValueChange = { personInCharge = it },
             label = { Text("Person in Charge") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         )
 
         TextField(
             value = assetDescription,
             onValueChange = { assetDescription = it },
             label = { Text("Asset Description") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).padding(top = 8.dp)
         )
 
         ImageCapture(
@@ -230,9 +232,9 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
                     missingFields.add("Asset ID Missing")
                 }
 
-                if (geom == "") {
-                    missingFields.add("Geom Missing")
-                }
+//                if (geom == "") {
+//                    missingFields.add("Geom Missing")
+//                }
 
                 if (groupName == "") {
                     missingFields.add("groupName Missing")
@@ -298,7 +300,7 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
 
                         val asset = Asset(
                             id = id.toLong(),
-                            geom = geom,
+                            geom = "0101000020E610000036A2C56350D93E4052E656708E520840",
                             uuid = uuid,
                             group_name = groupName,
                             group_id = groupId.toDouble(),

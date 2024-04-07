@@ -16,7 +16,7 @@ fun PdmScreen(navController: NavController, pdmViewModel: PDMViewModel) {
                 PdmAssetsTab(pdmViewModel, navController)
             }
             "Beneficiary" -> {
-                BeneficiaryContentTab()
+                BeneficiaryContentTab(navController)
             }
             "Enterprise" -> {
                 EnterpriseTabViewContent()

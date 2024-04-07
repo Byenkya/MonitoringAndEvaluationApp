@@ -167,3 +167,50 @@ data class Asset(
     val updated_by: String,
     val date_updated: String
 )
+
+data class Beneficiary(
+    val id: Long,
+    val geom: String,
+    val uuid: String,
+    @Json(name = "other_name")
+    val other_name: String,
+    @Json(name = "last_name")
+    val last_name: String,
+    @Json(name = "member_id")
+    val member_id: Double,
+    @Json(name = "nin")
+    val nin: String,
+    @Json(name = "gender")
+    val gender: String,
+    @Json(name = "contact")
+    val contact: String,
+    @Json(name = "email")
+    val email: String,
+    @Json(name = "status")
+    val status: String,
+    @Json(name = "subsistenc")
+    val subsistenc: Long,
+    @Json(name = "district")
+    val district: String,
+    @Json(name = "subcounty")
+    val subcounty: String,
+    @Json(name = "parish")
+    val parish: String,
+    @Json(name = "village")
+    val village: String,
+    @Json(name = "created_by")
+    val created_by: String,
+    @Json(name = "date_creat")
+    val date_creat: String,
+    @Json(name = "updated_by")
+    val updated_by: String,
+    @Json(name = "date_updat")
+    val date_updat: String,
+    @Json(name = "group_name")
+    val group_name: String,
+    @Json(name = "group_id")
+    val group_id: Double,
+    val lat_x: Double,
+    @Json(name = "lon_y")
+    val lon_y: Double
+)

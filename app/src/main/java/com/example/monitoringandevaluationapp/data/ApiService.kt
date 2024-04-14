@@ -49,4 +49,10 @@ interface ApiService {
         @Part enterprise: MultipartBody.Part
     ): ApiResponse
 
+    @POST("/saveGroup")
+    @Multipart
+    suspend fun saveGroup(
+        @Part group: MultipartBody.Part
+    ): ApiResponse
+
 }

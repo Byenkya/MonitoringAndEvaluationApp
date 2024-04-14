@@ -149,15 +149,31 @@ fun ProjectAssessment(navController: NavController, locationViewModel: LocationV
         )
 
         // project name drop down
+//        DropdownWithLabel(
+//            label = "Select Project",
+//            suggestions = projects.map { it.projectName }.distinct(),
+//            selectedText = selectedProject,
+//            onTextSelected = { projectName ->
+//                selectedProject = projectName
+//                selectedProjectDetails = projects.firstOrNull { it.projectName == projectName }
+//            }
+//        )
+
         DropdownWithLabel(
             label = "Select Project",
-            suggestions = projects.map { it.projectName }.distinct(),
+            suggestions = projects?.map { it.projectName }?.distinct() ?: emptyList(),
             selectedText = selectedProject,
             onTextSelected = { projectName ->
                 selectedProject = projectName
-                selectedProjectDetails = projects.firstOrNull { it.projectName == projectName }
+                selectedProjectDetails = projects?.firstOrNull { it.projectName == projectName }
+                if (selectedProjectDetails == null) {
+                    // Handle the case when the selected project is not found in the list
+                    // For example, you can display an error message or perform some other action
+                    Log.e("DropdownError", "Selected project not found: $projectName")
+                }
             }
         )
+
 
         // Assessment Date
         DateFieldWithPicker(

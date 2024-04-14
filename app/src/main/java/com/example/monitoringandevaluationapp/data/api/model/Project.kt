@@ -252,3 +252,11 @@ data class Enterprise(
     @Json(name = "lon_y")
     val lon_y: Double
 )
+
+data class Group(
+    val id: Long,
+    @Json(name = "name")
+    val name: String,
+    @Json(name = "descr")
+    val descr: String
+)

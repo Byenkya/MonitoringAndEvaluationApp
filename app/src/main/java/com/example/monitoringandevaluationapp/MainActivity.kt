@@ -41,6 +41,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.monitoringandevaluationapp.data.AppDatabase
+import com.example.monitoringandevaluationapp.data.repository.GroupRepository
 import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.CaptureImageScreen
 import com.example.monitoringandevaluationapp.presentation.ui.MapView.MapViewScreen
 import com.example.monitoringandevaluationapp.presentation.ui.ProjectAssessment.ProjectAssessment
@@ -53,6 +54,7 @@ import com.example.monitoringandevaluationapp.presentation.ui.sigin.SignInViewMo
 import com.example.monitoringandevaluationapp.data.repository.LocationRepository
 import com.example.monitoringandevaluationapp.data.repository.PostProjectRepository
 import com.example.monitoringandevaluationapp.data.repository.savedAssessmentRepository
+import com.example.monitoringandevaluationapp.presentation.ViewModel.GroupViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.LocationViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.PDMViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.SavedAssessmentViewModel
@@ -75,6 +77,7 @@ class MainActivity : ComponentActivity() {
     lateinit var locationViewModel: LocationViewModel
     lateinit var pdmViewModel: PDMViewModel
     lateinit var savedAssessmentViewModel: SavedAssessmentViewModel
+    lateinit var groupViewModel: GroupViewModel
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +88,8 @@ class MainActivity : ComponentActivity() {
         val locationRepository = LocationRepository(locationDao)
         val savedAssessmentDao = AppDatabase.getDatabase(this).savedAssessmentDao()
         val savedAssessmentRepository = savedAssessmentRepository(savedAssessmentDao)
+        val groupDao = AppDatabase.getDatabase(this).groupDao()
+        val groupRepository = GroupRepository(groupDao)
 
 
         // Initialize the ViewModel
@@ -115,6 +120,15 @@ class MainActivity : ComponentActivity() {
             }
         )[PDMViewModel::class.java]
 
+        groupViewModel = ViewModelProvider(
+            this,
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return GroupViewModel(groupRepository) as T
+                }
+            }
+        )[GroupViewModel::class.java]
+
         setContent {
             val navController = rememberNavController()
 
@@ -137,7 +151,8 @@ class MainActivity : ComponentActivity() {
                     navController,
                     locationViewModel,
                     pdmViewModel,
-                    savedAssessmentViewModel
+                    savedAssessmentViewModel,
+                    groupViewModel
                 )
             }
         }
@@ -214,7 +229,8 @@ fun AppNavigation(
     navController: NavHostController,
     locationViewModel: LocationViewModel,
     pdmViewModel: PDMViewModel,
-    savedAssessmentViewModel: SavedAssessmentViewModel
+    savedAssessmentViewModel: SavedAssessmentViewModel,
+    groupViewModel: GroupViewModel
 ) {
     NavHost(navController = navController, startDestination = "mapView") {
 
@@ -314,7 +330,7 @@ fun AppNavigation(
         }
 
         composable("pdmInfo") {
-            PdmScreen(navController = navController, pdmViewModel = pdmViewModel)
+            PdmScreen(navController = navController, pdmViewModel = pdmViewModel, groupViewModel = groupViewModel)
         }
     }
 }

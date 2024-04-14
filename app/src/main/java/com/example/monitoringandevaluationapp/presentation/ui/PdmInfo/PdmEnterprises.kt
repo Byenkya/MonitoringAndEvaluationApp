@@ -14,11 +14,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.monitoringandevaluationapp.data.GroupEntity
 import com.example.monitoringandevaluationapp.data.UserLocation
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
 import com.example.monitoringandevaluationapp.data.api.model.Enterprise
 import com.example.monitoringandevaluationapp.data.repository.PostProjectEnterpriseRepository
 import com.example.monitoringandevaluationapp.domain.usecases.FetchAndPostEnterpriseUseCaseImpl
+import com.example.monitoringandevaluationapp.presentation.ViewModel.GroupViewModel
 import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.DropdownWithLabel
 import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.MissingFieldsDialog
 import com.example.monitoringandevaluationapp.presentation.ui.ProjectAssessments.LoadingDialog
@@ -28,8 +30,10 @@ import java.util.Date
 import java.util.UUID
 
 @Composable
-fun EnterpriseTabViewContent(navController: NavController) {
+fun EnterpriseTabViewContent(navController: NavController, groupViewModel: GroupViewModel) {
     val context = LocalContext.current
+    val groups = remember { mutableStateListOf<GroupEntity>() }
+    var selectedGroup by remember { mutableStateOf("") }
     var isUploading by remember { mutableStateOf(false) }
     var apiResponse = ApiResponse("")
     val scope = rememberCoroutineScope()
@@ -56,6 +60,13 @@ fun EnterpriseTabViewContent(navController: NavController) {
     var latX by remember { mutableStateOf("") }
     var lonY by remember { mutableStateOf("") }
 
+    LaunchedEffect(key1 = groupViewModel.allgroups) {
+        groupViewModel.allgroups.observeForever { newList ->
+            groups.clear()
+            groups.addAll(newList)
+        }
+    }
+
     Column(
         modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())
     ) {
@@ -68,20 +79,35 @@ fun EnterpriseTabViewContent(navController: NavController) {
         )
 
         // groupName
-        TextField(
-            value = groupName,
-            onValueChange = { groupName = it },
-            label = { Text("Group Name") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-        )
+//        TextField(
+//            value = groupName,
+//            onValueChange = { groupName = it },
+//            label = { Text("Group Name") },
+//            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+//        )
+//
+//        // groupID
+//        TextField(
+//            value = groupId,
+//            onValueChange = { newValue -> groupId = newValue.filter { it.isDigit() } },
+//            label = { Text("Group ID") },
+//            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+//            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+//        )
 
-        // groupID
-        TextField(
-            value = groupId,
-            onValueChange = { newValue -> groupId = newValue.filter { it.isDigit() } },
-            label = { Text("Group ID") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+        // select group
+        DropdownWithLabel(
+            label = "Select Group",
+            suggestions = groups.map { it.name }.distinct(),
+            selectedText = selectedGroup,
+            onTextSelected = { selectedName ->
+                val selectedProjectGroup = groups.firstOrNull { it.name == selectedName }
+                if (selectedProjectGroup != null) {
+                    selectedGroup = selectedName
+                    groupName = selectedName
+                    groupId = selectedProjectGroup.id.toString()
+                }
+            }
         )
 
         // regStatus

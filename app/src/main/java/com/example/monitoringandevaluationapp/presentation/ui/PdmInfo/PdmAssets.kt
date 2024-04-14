@@ -37,15 +37,19 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.monitoringandevaluationapp.R
 import com.example.monitoringandevaluationapp.data.Dates
+import com.example.monitoringandevaluationapp.data.GroupEntity
+import com.example.monitoringandevaluationapp.data.LocationEntity
 import com.example.monitoringandevaluationapp.data.UserLocation
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
 import com.example.monitoringandevaluationapp.data.api.model.Asset
 import com.example.monitoringandevaluationapp.data.repository.PostProjectAssetRepository
 import com.example.monitoringandevaluationapp.data.repository.PostProjectRepository
 import com.example.monitoringandevaluationapp.domain.usecases.FetchAndPostAssetUseCaseImpl
+import com.example.monitoringandevaluationapp.presentation.ViewModel.GroupViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.LocationViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.PDMViewModel
 import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.DateFieldWithPicker
+import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.DropdownWithLabel
 import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.ImageCaptureButton
 import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.MissingFieldsDialog
 import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.captureImage
@@ -59,7 +63,10 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Composable
-fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
+fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, groupViewModel: GroupViewModel) {
+    val groups = remember { mutableStateListOf<GroupEntity>() }
+    var selectedGroup by remember { mutableStateOf("") }
+    var selectedProjectGroups by remember { mutableStateOf<GroupEntity?>(null) }
     var isUploading by remember { mutableStateOf(false) }
     var apiResponse = ApiResponse("")
     val scope = rememberCoroutineScope()
@@ -103,6 +110,13 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
         pdmViewModel.updateAssetPhotoTwoUri(uri)
     }
 
+    LaunchedEffect(key1 = groupViewModel.allgroups) {
+        groupViewModel.allgroups.observeForever { newList ->
+            groups.clear()
+            groups.addAll(newList)
+        }
+    }
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -118,33 +132,34 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController) {
         )
 
 //        TextField(
-//            value = geom,
-//            onValueChange = { geom = it },
-//            label = { Text("Geom") },
-//            modifier = Modifier.fillMaxWidth()
+//            value = groupName,
+//            onValueChange = { groupName = it },
+//            label = { Text("Group Name") },
+//            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
 //        )
 
-//        androidx.compose.material3.Text(
-//            text = "Uuid: $uuid", fontWeight = FontWeight.Bold,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(4.dp)
+        // select group
+        DropdownWithLabel(
+            label = "Select Group",
+            suggestions = groups.map { it.name }.distinct(),
+            selectedText = selectedGroup,
+            onTextSelected = { selectedName ->
+                val selectedProjectGroup = groups.firstOrNull { it.name == selectedName }
+                if (selectedProjectGroup != null) {
+                    selectedGroup = selectedName
+                    groupName = selectedName
+                    groupId = selectedProjectGroup.id.toString()
+                }
+            }
+        )
+
+//        TextField(
+//            value = groupId,
+//            onValueChange = { newValue -> groupId = newValue.filter { it.isDigit() } },
+//            label = { Text("Group ID") },
+//            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+//            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
 //        )
-
-        TextField(
-            value = groupName,
-            onValueChange = { groupName = it },
-            label = { Text("Group Name") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-        )
-
-        TextField(
-            value = groupId,
-            onValueChange = { newValue -> groupId = newValue.filter { it.isDigit() } },
-            label = { Text("Group ID") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-        )
 
 //        androidx.compose.material3.Text(
 //            text = "Lat X: ${UserLocation.lat}", fontWeight = FontWeight.Bold,

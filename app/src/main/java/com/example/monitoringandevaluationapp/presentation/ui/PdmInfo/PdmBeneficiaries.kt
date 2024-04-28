@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.monitoringandevaluationapp.data.DistrictDetails
 import com.example.monitoringandevaluationapp.data.GroupEntity
 import com.example.monitoringandevaluationapp.data.UserLocation
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
@@ -170,7 +171,7 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
         // District
         DropdownWithLabel(
             label = "District",
-            suggestions = listOf("Arua", "Madi Okollo", "Yumbe"),
+            suggestions = listOf("Arua", "Madi-Okollo", "Nebbi", "Yumbe"),
             selectedText = district,
             onTextSelected = { district = it }
         )
@@ -178,23 +179,43 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
         // subcounty
         DropdownWithLabel(
             label = "Sub County",
-            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
+            suggestions = DistrictDetails.subCountyParishes.keys.toList(),
             selectedText = subcounty,
             onTextSelected = { subcounty = it }
         )
+//        DropdownWithLabel(
+//            label = "Sub County",
+//            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
+//            selectedText = subcounty,
+//            onTextSelected = { subcounty = it }
+//        )
 
         // Parish
+//        DropdownWithLabel(
+//            label = "Parish",
+//            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
+//            selectedText = parish,
+//            onTextSelected = { parish = it }
+//        )
+
         DropdownWithLabel(
             label = "Parish",
-            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
+            suggestions = DistrictDetails.subCountyParishes[subcounty] ?: emptyList(),
             selectedText = parish,
             onTextSelected = { parish = it }
         )
 
         // village
+//        DropdownWithLabel(
+//            label = "Village",
+//            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
+//            selectedText = village,
+//            onTextSelected = { village = it }
+//        )
+
         DropdownWithLabel(
-            label = "Village",
-            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
+            label = "Address(Village)",
+            suggestions = DistrictDetails.villages,
             selectedText = village,
             onTextSelected = { village = it }
         )
@@ -262,10 +283,6 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
 
                 if (nin == "") {
                     missingFields.add("NIN Missing")
-                }
-
-                if (gender == "") {
-                    missingFields.add("Gender Missing")
                 }
 
                 if (gender == "") {

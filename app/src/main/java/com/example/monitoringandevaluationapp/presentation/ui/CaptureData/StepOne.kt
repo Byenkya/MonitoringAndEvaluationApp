@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import com.example.monitoringandevaluationapp.R
 import com.example.monitoringandevaluationapp.data.Dates
+import com.example.monitoringandevaluationapp.data.DistrictDetails
 import com.example.monitoringandevaluationapp.presentation.ViewModel.LocationViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -145,66 +146,6 @@ fun StepOne(locationViewModel: LocationViewModel) {
             }
         )
 
-        // Address(village)
-        DropdownWithLabel(
-            label = "Address(Village)",
-            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
-            selectedText = address,
-            onTextSelected = { village ->
-                locationViewModel.updateAddress(village)
-            }
-        )
-
-        // Parish
-        DropdownWithLabel(
-            label = "Parish",
-            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
-            selectedText = parish,
-            onTextSelected = { parish ->
-                locationViewModel.updateParish(parish)
-            }
-        )
-
-        // SubCounty
-        DropdownWithLabel(
-            label = "SubCounty",
-            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
-            selectedText = subCounty,
-            onTextSelected = { subCounty ->
-                locationViewModel.updateSubCounty(subCounty)
-            }
-        )
-
-        // County
-        DropdownWithLabel(
-            label = "County",
-            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
-            selectedText = county,
-            onTextSelected = { county ->
-                locationViewModel.updateCounty(county)
-            }
-        )
-
-        // District
-        DropdownWithLabel(
-            label = "District",
-            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
-            selectedText = district,
-            onTextSelected = { district ->
-                locationViewModel.updateDistrict(district)
-            }
-        )
-
-        // Sub Region
-        DropdownWithLabel(
-            label = "Sub Region",
-            suggestions = listOf("Nothern", "Central", "Eastern"),
-            selectedText = subRegion,
-            onTextSelected = { subRegion ->
-                locationViewModel.updateSubRegion(subRegion)
-            }
-        )
-
         // Country
         DropdownWithLabel(
             label = "Country",
@@ -214,6 +155,78 @@ fun StepOne(locationViewModel: LocationViewModel) {
                 locationViewModel.updateCountry(country)
             }
         )
+
+        // Sub Region
+        DropdownWithLabel(
+            label = "Sub Region",
+            suggestions = listOf("Northern", "Central", "Eastern"),
+            selectedText = subRegion,
+            onTextSelected = { subRegion ->
+                locationViewModel.updateSubRegion(subRegion)
+            }
+        )
+
+        // District
+        DropdownWithLabel(
+            label = "District",
+            suggestions = listOf("Arua", "Madi-Okollo", "Nebbi", "Yumbe"),
+            selectedText = district,
+            onTextSelected = { district ->
+                locationViewModel.updateDistrict(district)
+            }
+        )
+
+        // County
+        DropdownWithLabel(
+            label = "County",
+            suggestions = DistrictDetails.counties,
+            selectedText = county,
+            onTextSelected = { county ->
+                locationViewModel.updateCounty(county)
+            }
+        )
+
+        // SubCounty
+        DropdownWithLabel(
+            label = "SubCounty",
+            suggestions = DistrictDetails.subCountyParishes.keys.toList(),
+            selectedText = subCounty,
+            onTextSelected = { subCounty ->
+                locationViewModel.updateSubCounty(subCounty)
+            }
+        )
+
+        // Parish
+//        DropdownWithLabel(
+//            label = "Parish",
+//            suggestions = listOf("Adumi", "Ayivuni", "Pajulu"),
+//            selectedText = parish,
+//            onTextSelected = { parish ->
+//                locationViewModel.updateParish(parish)
+//            }
+//        )
+
+        // Parish Dropdown
+        DropdownWithLabel(
+            label = "Parish",
+            suggestions = DistrictDetails.subCountyParishes[subCounty] ?: emptyList(),
+            selectedText = parish,
+            onTextSelected = { selectedParish ->
+                locationViewModel.updateParish(selectedParish)
+            }
+        )
+
+
+        // Address(village)
+        DropdownWithLabel(
+            label = "Address(Village)",
+            suggestions = DistrictDetails.villages,
+            selectedText = address,
+            onTextSelected = { village ->
+                locationViewModel.updateAddress(village)
+            }
+        )
+
 
         // CreatedBy
         TextField(

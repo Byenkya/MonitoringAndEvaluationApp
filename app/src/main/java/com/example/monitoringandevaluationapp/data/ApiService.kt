@@ -2,6 +2,7 @@ package com.example.monitoringandevaluationapp.data
 
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
 import com.example.monitoringandevaluationapp.data.api.model.Enterprise
+import com.example.monitoringandevaluationapp.data.api.model.Group
 import com.example.monitoringandevaluationapp.data.api.model.Project
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -20,6 +21,13 @@ interface ApiService {
     @Multipart
     suspend fun saveProject(
         @Part project: MultipartBody.Part,
+        @Part images: List<MultipartBody.Part>
+    ): ApiResponse
+
+    @POST("/saveProjectAssessment")
+    @Multipart
+    suspend fun saveProjectAssessment(
+        @Part assessment: MultipartBody.Part,
         @Part images: List<MultipartBody.Part>
     ): ApiResponse
 
@@ -53,6 +61,15 @@ interface ApiService {
     @Multipart
     suspend fun saveGroup(
         @Part group: MultipartBody.Part
+    ): ApiResponse
+
+    @GET("/saveGroup")
+    suspend fun getGroups(): List<Group>
+
+    @POST("/saveProject")
+    @Multipart
+    suspend fun savePdmProject(
+        @Part pdmProject: MultipartBody.Part
     ): ApiResponse
 
 }

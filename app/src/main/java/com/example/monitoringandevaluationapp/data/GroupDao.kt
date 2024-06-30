@@ -19,4 +19,7 @@ interface GroupDao {
 
     @Query("DELETE FROM groupEntity WHERE id = :groupId")
     suspend fun deleteGroupById(groupId: Long)
+
+    @Query("DELETE FROM groupEntity")
+    suspend fun deleteAllGroups()
 }

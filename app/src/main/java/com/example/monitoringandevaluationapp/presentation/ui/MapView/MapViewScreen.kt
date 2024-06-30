@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,8 +34,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.monitoringandevaluationapp.data.LocationEntity
+import com.example.monitoringandevaluationapp.data.PdmProjectEntity
 import com.example.monitoringandevaluationapp.data.UserLocation
 import com.example.monitoringandevaluationapp.presentation.ViewModel.LocationViewModel
+import com.example.monitoringandevaluationapp.presentation.ViewModel.PdmProjectLocalViewModel
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -45,7 +48,7 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 @Composable
-fun MapViewScreen(navController: NavController, locationViewModel: LocationViewModel) {
+fun MapViewScreen(navController: NavController, pdmProjectLocalViewModel: PdmProjectLocalViewModel) {
     val context = LocalContext.current
     val mapView = rememberMapViewWithLifecycle(context)
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -54,7 +57,7 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
     val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
     // Observe LiveData and collect it as state
-    val locationEntities = remember { mutableStateOf(listOf<LocationEntity>()) }
+    val projects = remember { mutableStateOf(listOf<PdmProjectEntity>()) }
     val hasSavedLocationsLoaded = remember { mutableStateOf(false) }
     // Kampala default location
     var userLocation by remember { mutableStateOf(LatLng(0.2947, 32.5935)) }
@@ -70,64 +73,108 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
     val LOCATION_REQUEST_CODE = 1002
     val WRITE_REQUEST_CODE = 1003
     val READ_REQUEST_CODE = 1004
-
-    // Create a location request
-    val locationRequest = LocationRequest.create().apply {
-        interval = 5000L
-        fastestInterval = 2000L
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-    }
+    val CAMERA_REQUEST_CODE = 1005
 
 
-    // Create LocationCallback
-    val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(p0: LocationResult) {
-            p0 ?: return
-            for (location in p0.locations) {
-                userLocation = LatLng(location.latitude, location.longitude)
-                 locationViewModel.updateUserLocation(userLocation)
-                 UserLocation.lat = location.latitude
-                UserLocation.long = location.longitude
-                Log.d("FusedLocation", "locations updated: ${location.latitude}, ${location.longitude}")
+    if(isLocationEnabled) {
+        // Create LocationCallback
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(p0: LocationResult) {
+                p0 ?: return
+                for (location in p0.locations) {
+                    userLocation = LatLng(location.latitude, location.longitude)
+                    pdmProjectLocalViewModel.updateUserLocation(userLocation)
+                    UserLocation.lat = location.latitude
+                    UserLocation.long = location.longitude
+                    Log.d("FusedLocation", "locations updated: ${location.latitude}, ${location.longitude}")
+                }
             }
         }
-    }
 
-    // Permission check for location
-    val hasLocationPermission = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
+        // Create a location request
+        val locationRequest = LocationRequest.create().apply {
+            interval = 5000L
+            fastestInterval = 2000L
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
 
-    val hasWritePermission = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    ) == PackageManager.PERMISSION_GRANTED
+        // Permission check for location
+        val hasLocationPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
-    if(!hasWritePermission) {
-        // Request write permission
-        ActivityCompat.requestPermissions(
-            context as Activity,
-            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            WRITE_REQUEST_CODE
-        )
-    }
+        if (hasLocationPermission) {
+            Log.d("Success", "Permission granted")
+            // Get last known location
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    userLocation = LatLng(location.latitude, location.longitude)
+                    UserLocation.lat = location.latitude
+                    UserLocation.long = location.longitude
+                }
+            }
+            // Request location updates
+            fusedLocationProviderClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        } else {
+            Log.d("Success", "Permission not granted")
+            // Request location permission
+            ActivityCompat.requestPermissions(
+                context as Activity,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_REQUEST_CODE
+            )
+        }
 
-    val hasReadPermission = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.READ_EXTERNAL_STORAGE
-    ) == PackageManager.PERMISSION_GRANTED
 
-    if(!hasReadPermission) {
-        // Request read permission
-        ActivityCompat.requestPermissions(
-            context as Activity,
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-            READ_REQUEST_CODE
-        )
-    }
 
-    if (!isLocationEnabled) {
+
+        LaunchedEffect(pdmProjectLocalViewModel, userLocation) {
+            pdmProjectLocalViewModel.allPdmLocalProjects.observeForever { newList ->
+                projects.value = newList
+                mapView.getMapAsync { googleMap ->
+                    setupGoogleMap(googleMap, userLocation, projects)
+                }
+            }
+        }
+
+        DisposableEffect(Unit) {
+            onDispose {
+                if (hasLocationPermission) {
+                    fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            AndroidView(
+                factory = { mapView },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) { mapView ->
+                try {
+                    mapView.getMapAsync { googleMap ->
+                        // First setup
+                        setupGoogleMap(googleMap, userLocation, projects)
+
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Error ********: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+
+            }
+
+        }
+
+    } else {
         if (isDialogVisible) {
             AlertDialog(
                 onDismissRequest = { isDialogVisible = false },
@@ -137,84 +184,63 @@ fun MapViewScreen(navController: NavController, locationViewModel: LocationViewM
                     Button(onClick = {
                         // Intent to open location settings
                         context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                        val hasWritePermission = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        ) == PackageManager.PERMISSION_GRANTED
+
+                        if(!hasWritePermission) {
+                            // Request write permission
+                            ActivityCompat.requestPermissions(
+                                context as Activity,
+                                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                                WRITE_REQUEST_CODE
+                            )
+                        }
+
+                        val hasReadPermission = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        ) == PackageManager.PERMISSION_GRANTED
+
+                        if(!hasReadPermission) {
+                            // Request read permission
+                            ActivityCompat.requestPermissions(
+                                context as Activity,
+                                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                                READ_REQUEST_CODE
+                            )
+                        }
+
+                        val hasCameraPermission = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.CAMERA
+                        ) == PackageManager.PERMISSION_GRANTED
+
+                        if (!hasCameraPermission) {
+                            // Request camera permission
+                            ActivityCompat.requestPermissions(
+                                context as Activity,
+                                arrayOf(Manifest.permission.CAMERA),
+                                CAMERA_REQUEST_CODE
+                            )
+                        }
                     }) {
                         Text("Open Settings")
                     }
                 },
                 dismissButton = {
-                    Button(onClick = { isDialogVisible = false }) {
+                    Button(onClick = {
+                        isDialogVisible = false
+
+                    }) {
                         Text("Cancel")
                     }
                 }
             )
         }
-
     }
 
-    if (hasLocationPermission) {
-        Log.d("Success", "Permission granted")
-        // Get last known location
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                userLocation = LatLng(location.latitude, location.longitude)
-            }
-        }
-        // Request location updates
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
-    } else {
-        Log.d("Success", "Permission not granted")
-        // Request location permission
-        ActivityCompat.requestPermissions(
-            context as Activity,
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            LOCATION_REQUEST_CODE
-        )
-    }
-
-    LaunchedEffect(locationViewModel, userLocation) {
-        locationViewModel.allLocations.observeForever { newList ->
-            locationEntities.value = newList
-            mapView.getMapAsync { googleMap ->
-                setupGoogleMap(googleMap, userLocation, locationEntities)
-            }
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            if (hasLocationPermission) {
-                fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-            }
-        }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        AndroidView(
-            factory = { mapView },
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) { mapView ->
-            try {
-                mapView.getMapAsync { googleMap ->
-                    // First setup
-                    setupGoogleMap(googleMap, userLocation, locationEntities)
-
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-
-        }
-
-    }
 }
 @Composable
 fun rememberMapViewWithLifecycle(context: Context): MapView {
@@ -243,19 +269,19 @@ fun rememberMapViewWithLifecycle(context: Context): MapView {
 fun setupGoogleMap(
     googleMap: GoogleMap,
     userLocation: LatLng,
-    locationEntities: MutableState<List<LocationEntity>>
+    projects: MutableState<List<PdmProjectEntity>>
 ) {
     try {
         googleMap.clear()
-        if (locationEntities.value.isNotEmpty()) {
-            locationEntities.value.forEach { entity ->
-                val latLng = LatLng(entity.latitude, entity.longitude)
-                googleMap.addMarker(MarkerOptions().position(latLng).title(entity.projectName))
+        if (projects.value.isNotEmpty()) {
+            projects.value.forEach { entity ->
+                val latLng = LatLng(entity.longitude, entity.lat)
+                googleMap.addMarker(MarkerOptions().position(latLng).title(entity.projName))
             }
             googleMap.moveCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                    locationEntities.value.first().let {
-                        LatLng(it.latitude, it.longitude)
+                    projects.value.first().let {
+                        LatLng(it.longitude, it.lat)
                     },
                     15f
                 )

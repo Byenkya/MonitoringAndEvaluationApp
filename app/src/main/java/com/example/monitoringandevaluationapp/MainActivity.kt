@@ -4,6 +4,7 @@ import RetrofitClient
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -12,6 +13,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
@@ -28,7 +30,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
@@ -41,6 +48,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.monitoringandevaluationapp.data.AppDatabase
+import com.example.monitoringandevaluationapp.data.PdmProjectAssessmentEntity
+import com.example.monitoringandevaluationapp.data.PdmProjectEntity
 import com.example.monitoringandevaluationapp.data.repository.GroupRepository
 import com.example.monitoringandevaluationapp.presentation.ui.CaptureData.CaptureImageScreen
 import com.example.monitoringandevaluationapp.presentation.ui.MapView.MapViewScreen
@@ -52,16 +61,32 @@ import com.example.monitoringandevaluationapp.presentation.ui.sigin.GoogleAuthUi
 import com.example.monitoringandevaluationapp.presentation.ui.sigin.LoginScreen
 import com.example.monitoringandevaluationapp.presentation.ui.sigin.SignInViewModel
 import com.example.monitoringandevaluationapp.data.repository.LocationRepository
+import com.example.monitoringandevaluationapp.data.repository.PdmProjectAssessmentRepository
+import com.example.monitoringandevaluationapp.data.repository.PdmProjectLocalRepository
+import com.example.monitoringandevaluationapp.data.repository.PostPdmProjectAssessmentRepository
+import com.example.monitoringandevaluationapp.data.repository.PostProjectGroupRepository
 import com.example.monitoringandevaluationapp.data.repository.PostProjectRepository
 import com.example.monitoringandevaluationapp.data.repository.savedAssessmentRepository
 import com.example.monitoringandevaluationapp.presentation.ViewModel.GroupViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.LocationViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.PDMViewModel
+import com.example.monitoringandevaluationapp.presentation.ViewModel.PdmProjectLocalViewModel
 import com.example.monitoringandevaluationapp.presentation.ViewModel.SavedAssessmentViewModel
 import com.example.monitoringandevaluationapp.presentation.ui.PdmInfo.PdmScreen
+import com.example.monitoringandevaluationapp.presentation.ui.ProjectAssessments.PdmProjectAssessments
+import com.example.monitoringandevaluationapp.presentation.ui.ProjectDetails.PdmProjectDetails
+import com.example.monitoringandevaluationapp.presentation.ui.SavedData.SavedPdmProjects
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 class MainActivity : ComponentActivity() {
+    lateinit var locationViewModel: LocationViewModel
+    lateinit var pdmViewModel: PDMViewModel
+    lateinit var savedAssessmentViewModel: SavedAssessmentViewModel
+    lateinit var groupViewModel: GroupViewModel
+    lateinit var pdmProjectViewModel: PdmProjectLocalViewModel
+
     private val googleAuthUiClient by lazy {
         try {
             GoogleAuthUiClient(
@@ -74,10 +99,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    lateinit var locationViewModel: LocationViewModel
-    lateinit var pdmViewModel: PDMViewModel
-    lateinit var savedAssessmentViewModel: SavedAssessmentViewModel
-    lateinit var groupViewModel: GroupViewModel
+
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
@@ -89,8 +111,21 @@ class MainActivity : ComponentActivity() {
         val savedAssessmentDao = AppDatabase.getDatabase(this).savedAssessmentDao()
         val savedAssessmentRepository = savedAssessmentRepository(savedAssessmentDao)
         val groupDao = AppDatabase.getDatabase(this).groupDao()
+        val pdmProjectAssessmentDao = AppDatabase.getDatabase(this).pdmProjectAssessmentDao()
+        val projectAssessmentRepository = PdmProjectAssessmentRepository(pdmProjectAssessmentDao)
+        val pdmProjectDao = AppDatabase.getDatabase(this).pdmProjectDao()
+        val pdmProjectLocalRepository = PdmProjectLocalRepository(pdmProjectDao)
         val groupRepository = GroupRepository(groupDao)
+        val postProjectGroupRepository = PostProjectGroupRepository(RetrofitClient.apiService)
 
+        groupViewModel = ViewModelProvider(
+            this,
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return GroupViewModel(applicationContext, groupRepository, postProjectGroupRepository) as T
+                }
+            }
+        )[GroupViewModel::class.java]
 
         // Initialize the ViewModel
         locationViewModel = ViewModelProvider(
@@ -120,14 +155,15 @@ class MainActivity : ComponentActivity() {
             }
         )[PDMViewModel::class.java]
 
-        groupViewModel = ViewModelProvider(
+
+        pdmProjectViewModel = ViewModelProvider(
             this,
             object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return GroupViewModel(groupRepository) as T
+                    return PdmProjectLocalViewModel(pdmProjectLocalRepository, projectAssessmentRepository) as T
                 }
             }
-        )[GroupViewModel::class.java]
+        )[PdmProjectLocalViewModel::class.java]
 
         setContent {
             val navController = rememberNavController()
@@ -152,7 +188,9 @@ class MainActivity : ComponentActivity() {
                     locationViewModel,
                     pdmViewModel,
                     savedAssessmentViewModel,
-                    groupViewModel
+                    groupViewModel,
+                    pdmProjectViewModel,
+                    projectAssessmentRepository
                 )
             }
         }
@@ -175,23 +213,23 @@ fun AppBottomNavigation(navController: NavHostController) {
                 }
             }
         )
-        BottomNavigationItem(
-            icon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.White) },
-            label = { Text("Capture", color = Color.White, fontSize = 8.sp) },
-            selected = currentRoute == "captureImage",
-            onClick = {
-                if (currentRoute != "captureImage") {
-                    navController.navigate("captureImage")
-                }
-            }
-        )
+//        BottomNavigationItem(
+//            icon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.White) },
+//            label = { Text("Capture", color = Color.White, fontSize = 8.sp) },
+//            selected = currentRoute == "captureImage",
+//            onClick = {
+//                if (currentRoute != "captureImage") {
+//                    navController.navigate("captureImage")
+//                }
+//            }
+//        )
         BottomNavigationItem(
             icon = { Icon(Icons.Default.Info, contentDescription = null, tint = Color.White) },
             label = { Text("Projects", color = Color.White, fontSize = 8.sp) },
-            selected = currentRoute == "SavedImages",
+            selected = currentRoute == "SavedProjects",
             onClick = {
-                if (currentRoute != "SavedImages") {
-                    navController.navigate("SavedImages")
+                if (currentRoute != "SavedProjects") {
+                    navController.navigate("SavedProjects")
                 }
             }
         )
@@ -230,7 +268,9 @@ fun AppNavigation(
     locationViewModel: LocationViewModel,
     pdmViewModel: PDMViewModel,
     savedAssessmentViewModel: SavedAssessmentViewModel,
-    groupViewModel: GroupViewModel
+    groupViewModel: GroupViewModel,
+    pdmProjectLocalViewModel: PdmProjectLocalViewModel,
+    pdmProjectAssessmentRepository: PdmProjectAssessmentRepository
 ) {
     NavHost(navController = navController, startDestination = "mapView") {
 
@@ -280,59 +320,105 @@ fun AppNavigation(
             )
         }
         composable("mapView") {
-            MapViewScreen(navController = navController, locationViewModel = locationViewModel)
+            MapViewScreen(navController = navController, pdmProjectLocalViewModel = pdmProjectLocalViewModel)
         }
         composable("captureImage") {
             CaptureImageScreen(navController = navController, locationViewModel = locationViewModel)
         }
-        composable("SavedImages") {
-            SavedImageList(navController = navController, viewModel = locationViewModel)
+        composable("SavedProjects") {
+//            SavedImageList(navController = navController, viewModel = locationViewModel)
+            SavedPdmProjects(navController = navController, viewModel = pdmProjectLocalViewModel)
         }
         composable("projectAssessments/{projectName}") {backStackEntry ->
-            // Retrieve the locationId from the navigation arguments
+            // Retrieve the projectName from the navigation arguments
             val projectName = backStackEntry.arguments?.getString("projectName")
-            // Retrieve the corresponding LocationEntity based on locationId
-            val projectAssessments = locationViewModel.allLocations.value
-                ?.filter { it.projectName == projectName }
+
+            val projectAssessments = remember { mutableStateListOf<PdmProjectAssessmentEntity>() }
+
+            LaunchedEffect(key1 = pdmProjectLocalViewModel.allProjectAssessments) {
+                pdmProjectLocalViewModel.allProjectAssessments.observeForever { newList ->
+                    projectAssessments.clear()
+                    projectAssessments.addAll(newList)
+                }
+            }
 
             // Create an instance of PostProjectRepository (replace with your actual PostProjectRepository)
             val postProjectRepository = PostProjectRepository(RetrofitClient.apiService)
+            val postPdmProjectAssessmentRepository = PostPdmProjectAssessmentRepository(RetrofitClient.apiService)
 
             // Pass the LocationEntity to the ProjectDetails composable
             if (!projectAssessments.isNullOrEmpty()) {
                 val assessmentCount = projectAssessments.size
-                ListOfProjectAssessments(
+                PdmProjectAssessments(
                     navController = navController,
-                    assessments = projectAssessments,
-                    assessmentCount = assessmentCount,
-                    viewModel = locationViewModel,
-                    savedAssessmentViewModel = savedAssessmentViewModel,
-                    projectRepository = postProjectRepository
+                    assessments = projectAssessments.filter { it.projectName == projectName },
+                    pdmProjectAssessmentRepository = pdmProjectAssessmentRepository,
+                    postPdmProjectAssessmentRepository = postPdmProjectAssessmentRepository
                 )
+//                ListOfProjectAssessments(
+//                    navController = navController,
+//                    assessments = projectAssessments,
+//                    assessmentCount = assessmentCount,
+//                    viewModel = locationViewModel,
+//                    savedAssessmentViewModel = savedAssessmentViewModel,
+//                    projectRepository = postProjectRepository
+//                )
             }
         }
 
         composable("projectDetails/{locationId}") { backStackEntry ->
-            // Retrieve the locationId from the navigation arguments
-            val locationId = backStackEntry.arguments?.getString("locationId")
-            // Retrieve the corresponding LocationEntity based on locationId
-            val locationEntity = locationViewModel.allLocations.value?.firstOrNull {
-                it.id == locationId
+            val projectId = remember { mutableStateOf<String?>(null) }
+            var pdmProjectEntity: PdmProjectEntity? by remember { mutableStateOf(null) }
+
+            // Retrieve the projectId from the navigation arguments
+            LaunchedEffect(backStackEntry.arguments?.getString("locationId")) {
+                projectId.value = backStackEntry.arguments?.getString("locationId")
             }
-            // Pass the LocationEntity to the ProjectDetails composable
-            if (locationEntity != null) {
-                ProjectDetails(navController = navController, locationEntity = locationEntity)
+
+            // Observe changes in the project entity based on the projectId
+            LaunchedEffect(projectId.value) {
+                projectId.value?.let { id ->
+                    pdmProjectLocalViewModel.getPdmProjectById(id.toLong()).observeForever { entity ->
+                        pdmProjectEntity = entity
+                    }
+                }
             }
+
+            // Display the PdmProjectDetails when pdmProjectEntity is not null
+            if (pdmProjectEntity != null) {
+                PdmProjectDetails(navController = navController, pdmProjectEntity = pdmProjectEntity!!)
+            }
+
         }
 
         composable("projectAssessment") {
-            ProjectAssessment(navController = navController, locationViewModel = locationViewModel)
+            ProjectAssessment(
+                navController = navController,
+                projectPdmProjectLocationViewModel = pdmProjectLocalViewModel,
+                groupViewModel = groupViewModel,
+                pdmProjectAssessmentRepository = pdmProjectAssessmentRepository
+            )
         }
 
         composable("pdmInfo") {
-            PdmScreen(navController = navController, pdmViewModel = pdmViewModel, groupViewModel = groupViewModel)
+            PdmScreen(
+                navController = navController,
+                pdmViewModel = pdmViewModel,
+                groupViewModel = groupViewModel,
+                pdmProjectLocalViewModel = pdmProjectLocalViewModel
+            )
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun convertDateToPostgresFormat(dateStr: String): String {
+    // Parse the input date string with the given format
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val date = LocalDate.parse(dateStr, formatter)
+
+    // Format the date to the required PostgreSQL format
+    return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 }
 
 

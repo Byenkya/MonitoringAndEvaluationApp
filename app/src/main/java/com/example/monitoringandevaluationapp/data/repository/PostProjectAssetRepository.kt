@@ -37,6 +37,7 @@ class PostProjectAssetRepository(private val apiService: ApiService) {
             return apiService.saveAsset(assetPart, images)
 
         } catch (e: Exception) {
+
             return ApiResponse("Error: ${e.message}")
         }
     }

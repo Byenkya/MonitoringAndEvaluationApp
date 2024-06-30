@@ -9,7 +9,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [LocationEntity::class, SavedAssessmentEntity::class, GroupEntity::class],
+    entities = [LocationEntity::class, SavedAssessmentEntity::class, GroupEntity::class, PdmProjectEntity::class, PdmProjectAssessmentEntity::class],
     version = 2, exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -18,6 +18,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun savedAssessmentDao(): SavedAssessmentDao
 
     abstract fun groupDao(): GroupDao
+
+    abstract fun pdmProjectDao(): PdmProjectDao
+
+    abstract fun pdmProjectAssessmentDao(): ProjectAssessmentDao
 
     companion object {
         @Volatile

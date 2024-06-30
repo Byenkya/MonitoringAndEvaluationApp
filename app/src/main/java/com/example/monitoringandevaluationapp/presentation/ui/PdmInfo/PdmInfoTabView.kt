@@ -3,6 +3,7 @@ package com.example.monitoringandevaluationapp.presentation.ui.PdmInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -51,17 +52,40 @@ fun PdmInfoTabView(
             }
         )
 
-        TabRow(
+//        TabRow(
+//            selectedTabIndex = selectedTabIndex,
+//            backgroundColor = Color.White, // Set background color to white
+//            contentColor = Color.Black // Set text color to black
+//        ) {
+//            tabs.forEachIndexed { index, title ->
+//                Tab(
+//                    text = { Text(title, fontSize = 6.sp, fontWeight = FontWeight.Bold,) },
+//                    selected = selectedTabIndex == index,
+//                    onClick = { selectedTabIndex = index },
+//                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp)
+//                )
+//            }
+//        }
+
+        ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
             backgroundColor = Color.White, // Set background color to white
             contentColor = Color.Black // Set text color to black
         ) {
             tabs.forEachIndexed { index, title ->
                 Tab(
-                    text = { Text(title, fontSize = 8.sp, fontWeight = FontWeight.Bold,) },
+                    text = {
+                        Text(
+                            text = title,
+                            fontSize = 14.sp, // Adjust font size
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
-                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp, vertical = 4.dp) // Adjust padding
+                        .defaultMinSize(minWidth = 80.dp) // Set a minimum width for each tab
                 )
             }
         }

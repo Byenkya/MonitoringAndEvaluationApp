@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -292,6 +293,8 @@ fun DateFieldWithPicker(
                 "Date" -> dates.milestoneAssessmentDate
                 "Target Date" -> dates.targetDate
                 "Date Acquired" -> dates.dateAcquired
+                "Pdm Start Date" -> dates.pdmStartDate
+                "Pdm End Date" -> dates.pdmEndDate
                 else -> "four"
             },
             fontWeight = FontWeight.Bold
@@ -339,6 +342,14 @@ fun DateFieldWithPicker(
 
                     "Date Acquired" -> {
                         dates.dateAcquired = it
+                    }
+
+                    "Pdm Start Date" -> {
+                        dates.pdmStartDate = it
+                    }
+
+                    "Pdm End Date" -> {
+                        dates.pdmEndDate = it
                     }
                 }
                 date.value = it
@@ -435,6 +446,7 @@ fun DropdownWithLabel(
             onDismissRequest = { expanded = false },
             modifier = Modifier
                 .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+                .height(300.dp)
         ) {
             // Add a search TextField at the top
             Box(

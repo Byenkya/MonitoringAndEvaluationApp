@@ -138,6 +138,7 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation ("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 
-
+    // locations
+    implementation ("org.locationtech.jts:jts-core:1.18.2")
 
 }

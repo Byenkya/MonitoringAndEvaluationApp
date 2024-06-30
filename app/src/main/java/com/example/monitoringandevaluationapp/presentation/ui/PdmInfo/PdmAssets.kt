@@ -1,12 +1,15 @@
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -31,14 +34,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.monitoringandevaluationapp.R
+import com.example.monitoringandevaluationapp.convertDateToPostgresFormat
 import com.example.monitoringandevaluationapp.data.Dates
+import com.example.monitoringandevaluationapp.data.GeometryUtils
+import com.example.monitoringandevaluationapp.data.GeometryUtils.byteArrayToHexString
 import com.example.monitoringandevaluationapp.data.GroupEntity
 import com.example.monitoringandevaluationapp.data.LocationEntity
+import com.example.monitoringandevaluationapp.data.PdmProjectEntity
 import com.example.monitoringandevaluationapp.data.UserLocation
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
 import com.example.monitoringandevaluationapp.data.api.model.Asset
@@ -62,6 +70,7 @@ import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.*
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, groupViewModel: GroupViewModel) {
     val groups = remember { mutableStateListOf<GroupEntity>() }
@@ -75,7 +84,6 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, group
     val showDialog = remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     var id by remember { mutableStateOf("") }
-    var geom by remember { mutableStateOf("") }
     val uuid = remember { UUID.randomUUID().toString() }
     var groupName by remember { mutableStateOf("") }
     var groupId by remember { mutableStateOf("") }
@@ -95,6 +103,60 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, group
     var updatedBy by remember { mutableStateOf("") }
     var dateUpdated by remember { mutableStateOf<Date?>(null) }
     val context = LocalContext.current
+    // Declare request code for location permission
+    val WRITE_REQUEST_CODE = 1003
+    val READ_REQUEST_CODE = 1004
+    val CAMERA_REQUEST_CODE = 1005
+
+    val hasWritePermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!hasWritePermission) {
+        // Request write permission
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            WRITE_REQUEST_CODE
+        )
+    }
+
+    val hasReadPermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!hasReadPermission) {
+        // Request read permission
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+            READ_REQUEST_CODE
+        )
+    }
+
+    val hasCameraPermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!hasCameraPermission) {
+        // Request camera permission
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.CAMERA),
+            CAMERA_REQUEST_CODE
+        )
+    }
+
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.CAMERA),
+            CAMERA_REQUEST_CODE
+        )
+    }
     val file = context.createImageFile()
     val uri = FileProvider.getUriForFile(
         Objects.requireNonNull(context),
@@ -123,13 +185,13 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, group
             .verticalScroll(rememberScrollState()),
 
     ) {
-        TextField(
-            value = id,
-            onValueChange = { newValue -> id = newValue.filter { it.isDigit() } },
-            label = { Text("ID") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-        )
+//        TextField(
+//            value = id,
+//            onValueChange = { newValue -> id = newValue.filter { it.isDigit() } },
+//            label = { Text("ID") },
+//            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+//            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+//        )
 
 //        TextField(
 //            value = groupName,
@@ -179,7 +241,9 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, group
             value = assetId,
             onValueChange = { assetId = it },
             label = { Text("Asset ID") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         )
 
         DateFieldWithPicker(
@@ -195,21 +259,28 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, group
             value = assetName,
             onValueChange = { assetName = it },
             label = { Text("Asset Name") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         )
 
         TextField(
             value = personInCharge,
             onValueChange = { personInCharge = it },
             label = { Text("Person in Charge") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         )
 
         TextField(
             value = assetDescription,
             onValueChange = { assetDescription = it },
             label = { Text("Asset Description") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).padding(top = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+                .padding(top = 8.dp)
         )
 
         ImageCapture(
@@ -243,9 +314,9 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, group
 
         Button(
             onClick = {
-                if (id == "") {
-                    missingFields.add("Asset ID Missing")
-                }
+//                if (id == "") {
+//                    missingFields.add("Asset ID Missing")
+//                }
 
 //                if (geom == "") {
 //                    missingFields.add("Geom Missing")
@@ -312,17 +383,19 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, group
 
                         val assetPhotoOne = saveFileToDownloads(context, assetPhotoOneUri!!)
                         val assetPhotoTwo = saveFileToDownloads(context, assetPhotoTwoUri!!)
+                        val geom = byteArrayToHexString(
+                            GeometryUtils.createGeomFromLatLng(UserLocation.lat, UserLocation.long)
+                        )
 
                         val asset = Asset(
-                            id = id.toLong(),
-                            geom = "0101000020E610000036A2C56350D93E4052E656708E520840",
+                            geom = geom,
                             uuid = uuid,
                             group_name = groupName,
                             group_id = groupId.toDouble(),
-                            lat_x = UserLocation.lat,
-                            lon_y = UserLocation.long,
+                            lat_x = UserLocation.long,
+                            lon_y = UserLocation.lat,
                             asset_id = assetId,
-                            date_acquired = Dates.dateAcquired,
+                            date_acquired = convertDateToPostgresFormat(Dates.dateAcquired),
                             asset_name = assetName,
                             person_incharge = personInCharge,
                             asset_description = assetDescription,
@@ -341,7 +414,6 @@ fun PdmAssetsTab(pdmViewModel: PDMViewModel, navController: NavController, group
                             apiResponse = fetchAndPostAssetUseCaseImpl.execute()
                             if (apiResponse.message == "Asset saved successfully!!") {
                                 id = ""
-                                geom = ""
                                 groupName = ""
                                 groupId = ""
                                 assetId = "0"

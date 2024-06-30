@@ -136,7 +136,6 @@ data class Project(
 )
 
 data class Asset(
-    val id: Long,
     val geom: String,
     val uuid: String,
     @Json(name = "group_name")
@@ -169,7 +168,6 @@ data class Asset(
 )
 
 data class Beneficiary(
-    val id: Long,
     val geom: String,
     val uuid: String,
     @Json(name = "other_name")
@@ -216,7 +214,6 @@ data class Beneficiary(
 )
 
 data class Enterprise(
-    val id: Long,
     val geom: String,
     val uuid: String,
     @Json(name = "group_name")
@@ -255,8 +252,110 @@ data class Enterprise(
 
 data class Group(
     val id: Long,
-    @Json(name = "name")
     val name: String,
     @Json(name = "descr")
     val descr: String
 )
+
+data class PdmProject(
+    val geom: String,
+    val uuid: String,
+    @Json(name = "group_id")
+    val group_id: Long,
+    @Json(name = "group_name")
+    val group_name: String,
+    @Json(name = "proj_no")
+    val proj_no: String,
+    @Json(name = "proj_name")
+    val proj_name: String,
+    @Json(name = "proj_focus")
+    val proj_focus: String,
+    @Json(name = "proj_descr")
+    val proj_descr: String,
+    @Json(name = "start_date")
+    val start_date: String,
+    @Json(name = "end_date")
+    val end_date: String,
+    @Json(name = "funded_by")
+    val funded_by: String,
+    @Json(name = "amount_ugx")
+    val amount_ugx: Long,
+    @Json(name = "team_leader")
+    val team_leader: String,
+    @Json(name = "email")
+    val email: String,
+    @Json(name = "telephone")
+    val telephone: String,
+    @Json(name = "status")
+    val status: String,
+    val created_by: String,
+    @Json(name = "date_creat")
+    val date_creat: String,
+    @Json(name = "updated_by")
+    val updated_by: String,
+    @Json(name = "date_updat")
+    val date_updat: String,
+    @Json(name = "lat_x")
+    val lat_x: Double,
+    @Json(name = "lon_y")
+    val lon_y: Double
+)
+
+data class PdmProjectAssessment(
+    val geom: String,
+    val uuid: String,
+    @Json(name = "group_name")
+    val group_name: String,
+    @Json(name = "group_id")
+    val group_id: Long,
+    @Json(name = "lat_x")
+    val lat_x: Double,
+    @Json(name = "lon_y")
+    val lon_y: Double,
+    @Json(name = "assessed_by")
+    val assessed_by: String,
+    @Json(name = "date_assessed")
+    val date_assessed: String,
+    @Json(name = "assess_milestones")
+    val assess_milestones: String,
+    @Json(name = "assessed_for")
+    val assessed_for: String,
+    @Json(name = "observation")
+    val observation: String,
+    @Json(name = "assessed_photo1")
+    val assessed_photo1: String,
+    @Json(name = "assessed_photo2")
+    val assessed_photo2: String,
+    @Json(name = "assessed_photo3")
+    val assessed_photo3: String,
+    @Json(name = "assessed_photo4")
+    val assessed_photo4: String,
+    @Json(name = "milestone_detail")
+    val milestone_detail: String,
+    @Json(name = "milestone_target")
+    val milestone_target: String,
+    @Json(name = "milestone_target_date")
+    val milestone_target_date: String,
+    @Json(name = "assigned_to")
+    val assigned_to: String,
+    @Json(name = "milestone_status")
+    val milestone_status: String,
+    @Json(name = "milestone_photo1")
+    val milestone_photo1: String,
+    @Json(name = "milestone_photo2")
+    val milestone_photo2: String,
+    @Json(name = "milestone_photo3")
+    val milestone_photo3: String,
+    @Json(name = "milestone_photo4")
+    val milestone_photo4: String,
+    @Json(name = "updated_by")
+    val updated_by: String,
+    @Json(name = "date_updated")
+    val date_updated: String,
+    @Json(name = "project_name")
+    val project_name: String,
+    @Json(name = "project_id")
+    val project_id: Long
+)
+
+

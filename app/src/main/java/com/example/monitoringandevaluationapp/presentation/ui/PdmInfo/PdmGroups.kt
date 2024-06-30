@@ -40,13 +40,13 @@ fun GroupsTabViewContent(navController: NavController, groupViewModel: GroupView
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
-        TextField(
-            value = id,
-            onValueChange = { newValue -> id = newValue.filter { it.isDigit() }},
-            label = { Text("ID") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-        )
+//        TextField(
+//            value = id,
+//            onValueChange = { newValue -> id = newValue.filter { it.isDigit() }},
+//            label = { Text("ID") },
+//            modifier = Modifier.fillMaxWidth(),
+//            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+//        )
 
         TextField(
             value = groupName,
@@ -64,9 +64,9 @@ fun GroupsTabViewContent(navController: NavController, groupViewModel: GroupView
 
         Button(
             onClick = {
-                if (id == "") {
-                    missingFields.add("Group ID Missing")
-                }
+//                if (id == "") {
+//                    missingFields.add("Group ID Missing")
+//                }
 
                 if (groupName == "") {
                     missingFields.add("Group Name Missing")
@@ -82,9 +82,8 @@ fun GroupsTabViewContent(navController: NavController, groupViewModel: GroupView
                     errorMessage.value = missingFieldsMessage
                 } else {
                     try {
-
                         val group = Group(
-                            id = id.toLong(),
+                            id = 0,
                             name = groupName,
                             descr = descr
                         )

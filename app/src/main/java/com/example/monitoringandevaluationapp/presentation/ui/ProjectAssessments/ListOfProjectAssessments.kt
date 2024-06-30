@@ -1,5 +1,8 @@
 package com.example.monitoringandevaluationapp.presentation.ui.ProjectAssessments
 
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -45,6 +48,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.monitoringandevaluationapp.R
 import com.example.monitoringandevaluationapp.data.SavedAssessmentEntity
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
@@ -73,6 +78,61 @@ fun ListOfProjectAssessments(
     var apiResponse = ApiResponse("")
     // Observe download status
     val downloadStatus by viewModel.downloadStatus.collectAsState()
+
+    // Declare request code for location permission
+    val WRITE_REQUEST_CODE = 1003
+    val READ_REQUEST_CODE = 1004
+    val CAMERA_REQUEST_CODE = 1005
+
+    val hasWritePermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!hasWritePermission) {
+        // Request write permission
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            WRITE_REQUEST_CODE
+        )
+    }
+
+    val hasReadPermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!hasReadPermission) {
+        // Request read permission
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+            READ_REQUEST_CODE
+        )
+    }
+
+    val hasCameraPermission = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!hasCameraPermission) {
+        // Request camera permission
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.CAMERA),
+            CAMERA_REQUEST_CODE
+        )
+    }
+
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.CAMERA),
+            CAMERA_REQUEST_CODE
+        )
+    }
 
     Column(
         Modifier

@@ -12,4 +12,6 @@ object Dates {
     var milestoneAssessmentDate = ""
     var targetDate = ""
     var dateAcquired = ""
+    var pdmStartDate = ""
+    var pdmEndDate = ""
 }

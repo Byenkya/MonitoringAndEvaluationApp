@@ -2,20 +2,29 @@ package com.example.monitoringandevaluationapp.presentation.ui.PdmInfo
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.navigation.NavController
 import com.example.monitoringandevaluationapp.data.DistrictDetails
+import com.example.monitoringandevaluationapp.data.GeometryUtils
 import com.example.monitoringandevaluationapp.data.GroupEntity
+import com.example.monitoringandevaluationapp.data.PdmProjectEntity
 import com.example.monitoringandevaluationapp.data.UserLocation
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
 import com.example.monitoringandevaluationapp.data.api.model.Enterprise
@@ -42,7 +51,6 @@ fun EnterpriseTabViewContent(navController: NavController, groupViewModel: Group
     val errorMessage = remember { mutableStateOf("") }
     val showDialog = remember { mutableStateOf(false) }
     var id by remember { mutableStateOf("") }
-    var geom by remember { mutableStateOf("") }
     val uuid =  remember { UUID.randomUUID().toString() }
     var groupName by remember { mutableStateOf("") }
     var groupId by remember { mutableStateOf("") }
@@ -71,28 +79,11 @@ fun EnterpriseTabViewContent(navController: NavController, groupViewModel: Group
     Column(
         modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())
     ) {
-        TextField(
-            value = id,
-            onValueChange = { newValue -> id = newValue.filter { it.isDigit() }},
-            label = { Text("ID") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-        )
-
-        // groupName
 //        TextField(
-//            value = groupName,
-//            onValueChange = { groupName = it },
-//            label = { Text("Group Name") },
-//            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-//        )
-//
-//        // groupID
-//        TextField(
-//            value = groupId,
-//            onValueChange = { newValue -> groupId = newValue.filter { it.isDigit() } },
-//            label = { Text("Group ID") },
-//            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+//            value = id,
+//            onValueChange = { newValue -> id = newValue.filter { it.isDigit() }},
+//            label = { Text("ID") },
+//            modifier = Modifier.fillMaxWidth(),
 //            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
 //        )
 
@@ -112,35 +103,49 @@ fun EnterpriseTabViewContent(navController: NavController, groupViewModel: Group
         )
 
         // regStatus
-        TextField(
-            value = regStatus,
-            onValueChange = { regStatus = it },
-            label = { Text("Reg Status") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+        CustomDropdown(
+            label = "Registration Status",
+            options = listOf("REGISTERED", "NOT REGISTERED", "OTHER"),
+            selectedOption = regStatus,
+            onOptionSelected = { selectedOption ->
+                regStatus = selectedOption
+            }
         )
 
-        // activation
-        TextField(
-            value = activation,
-            onValueChange = { activation = it },
-            label = { Text("Activation") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+        // Activation
+        CustomDropdown(
+            label = "Activation",
+            options = listOf("ACTIVE", "INACTIVE", "PENDING"),
+            selectedOption = activation,
+            onOptionSelected = { selectedOption ->
+                activation = selectedOption
+            }
         )
 
         // funding type
-        TextField(
-            value = fundingType,
-            onValueChange = { fundingType = it },
-            label = { Text("Funding Type") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+        CustomDropdown(
+            label = "Funding Type",
+            options = listOf("PDM", "OTHER"),
+            selectedOption = fundingType,
+            onOptionSelected = { selectedOption ->
+                fundingType = selectedOption
+            }
         )
 
         // amount
+//        TextField(
+//            value = amount,
+//            onValueChange = { amount = it },
+//            label = { Text("Amount(UGX)") },
+//            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+//        )
+
         TextField(
             value = amount,
             onValueChange = { amount = it },
-            label = { Text("Amount") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            label = { Text("Amount(UGX)") },
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
         )
 
         // District
@@ -206,9 +211,6 @@ fun EnterpriseTabViewContent(navController: NavController, groupViewModel: Group
 
         Button(
             onClick = {
-                if (id == "") {
-                    missingFields.add("Enterprise ID Missing")
-                }
 
                 if (groupName == "") {
                     missingFields.add("Group Name Missing")
@@ -272,10 +274,15 @@ fun EnterpriseTabViewContent(navController: NavController, groupViewModel: Group
 
                         // Format the current date and time into a string
                         val formattedDate = dateFormat.format(currentDate)
+                        val geom = GeometryUtils.byteArrayToHexString(
+                            GeometryUtils.createGeomFromLatLng(
+                                UserLocation.lat,
+                                UserLocation.long
+                            )
+                        )
 
                         val enterprise = Enterprise(
-                            id = id.toLong(),
-                            geom = "0101000020E610000036A2C56350D93E4052E656708E520840",
+                            geom = geom,
                             uuid = uuid,
                             group_name = groupName,
                             group_id = groupId.toDouble(),
@@ -291,8 +298,8 @@ fun EnterpriseTabViewContent(navController: NavController, groupViewModel: Group
                             date_creat = formattedDate,
                             updated_by = updatedBy,
                             date_updat = formattedDate,
-                            lat_x = UserLocation.lat,
-                            lon_y = UserLocation.long
+                            lat_x = UserLocation.long,
+                            lon_y = UserLocation.lat
                         )
 
                         val postProjectEnterpriseRepository = PostProjectEnterpriseRepository(RetrofitClient.apiService)
@@ -304,7 +311,6 @@ fun EnterpriseTabViewContent(navController: NavController, groupViewModel: Group
 
                             if (apiResponse.message == "Enterprise saved successfully!!") {
                                 id = ""
-                                geom = ""
                                 groupName = ""
                                 groupId = ""
                                 regStatus = ""
@@ -360,3 +366,54 @@ fun EnterpriseTabViewContent(navController: NavController, groupViewModel: Group
         )
     }
 }
+
+@Composable
+fun CustomDropdown(
+    label: String,
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var textFieldSize by remember { mutableStateOf(Size.Zero) }
+    val icon = Icons.Filled.ArrowDropDown
+
+    Box {
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = { /* No-op, as it's readOnly */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    textFieldSize = coordinates.size.toSize()
+                }
+                .padding(top = 8.dp),
+            label = { Text(label) },
+            readOnly = true,
+            trailingIcon = {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "DropDown",
+                    modifier = Modifier.clickable { expanded = !expanded }
+                )
+            }
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(onClick = {
+                    onOptionSelected(option)
+                    expanded = false
+                }) {
+                    Text(text = option)
+                }
+            }
+        }
+    }
+}
+

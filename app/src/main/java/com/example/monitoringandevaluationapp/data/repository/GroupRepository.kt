@@ -23,4 +23,9 @@ class GroupRepository(private val groupDao: GroupDao) {
         groupDao.deleteGroupById(groupEntity.id)
     }
 
+    suspend fun deleteAllGroups() {
+        groupDao.deleteAllGroups()
+    }
+
+
 }

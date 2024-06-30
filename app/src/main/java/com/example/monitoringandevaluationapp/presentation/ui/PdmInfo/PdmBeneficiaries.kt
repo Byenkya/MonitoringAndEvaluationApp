@@ -7,16 +7,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.monitoringandevaluationapp.data.DistrictDetails
+import com.example.monitoringandevaluationapp.data.GeometryUtils
 import com.example.monitoringandevaluationapp.data.GroupEntity
+import com.example.monitoringandevaluationapp.data.PdmProjectEntity
 import com.example.monitoringandevaluationapp.data.UserLocation
 import com.example.monitoringandevaluationapp.data.api.model.ApiResponse
 import com.example.monitoringandevaluationapp.data.api.model.Beneficiary
@@ -43,7 +47,6 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
     val errorMessage = remember { mutableStateOf("") }
     val showDialog = remember { mutableStateOf(false) }
     var id by remember { mutableStateOf("") }
-    var geom by remember { mutableStateOf("") }
     val uuid =  remember { UUID.randomUUID().toString() }
     var otherName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -64,8 +67,7 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
     var dateUpdated by remember { mutableStateOf("") }
     var groupName by remember { mutableStateOf("") }
     var groupId by remember { mutableStateOf("") }
-    var latX by remember { mutableStateOf("") }
-    var lonY by remember { mutableStateOf("") }
+    var isValidEmail by remember { mutableStateOf(true) }
 
     LaunchedEffect(key1 = groupViewModel.allgroups) {
         groupViewModel.allgroups.observeForever { newList ->
@@ -78,13 +80,13 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
     Column(
         modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())
     ) {
-        TextField(
-            value = id,
-            onValueChange = { newValue -> id = newValue.filter { it.isDigit() } },
-            label = { Text("ID") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-        )
+//        TextField(
+//            value = id,
+//            onValueChange = { newValue -> id = newValue.filter { it.isDigit() } },
+//            label = { Text("ID") },
+//            modifier = Modifier.fillMaxWidth(),
+//            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+//        )
 
 //        TextField(
 //            value = geom,
@@ -103,7 +105,7 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
         TextField(
             value = otherName,
             onValueChange = { otherName = it },
-            label = { Text("Other Names") },
+            label = { Text("First Names") },
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         )
 
@@ -144,12 +146,18 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         )
 
+
         TextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                isValidEmail = isValidEmail(it)
+            },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            isError = !isValidEmail
         )
+
 
         TextField(
             value = status,
@@ -261,9 +269,6 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
 
         Button(
             onClick = {
-                if (id == "") {
-                    missingFields.add("Asset ID Missing")
-                }
 
                 if (otherName == "") {
                     missingFields.add("otherName Missing")
@@ -349,9 +354,15 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
                         // Format the current date and time into a string
                         val formattedDate = dateFormat.format(currentDate)
 
+                        val geom = GeometryUtils.byteArrayToHexString(
+                            GeometryUtils.createGeomFromLatLng(
+                                UserLocation.lat,
+                                UserLocation.long
+                            )
+                        )
+
                         val beneficiary = Beneficiary(
-                            id = id.toLong(),
-                            geom = "0101000020E610000036A2C56350D93E4052E656708E520840",
+                            geom = geom,
                             uuid = uuid,
                             other_name = otherName,
                             last_name = lastName,
@@ -372,8 +383,8 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
                             date_updat = formattedDate,
                             group_name = groupName,
                             group_id = groupId.toDouble(),
-                            lat_x = UserLocation.lat,
-                            lon_y = UserLocation.long
+                            lat_x = UserLocation.long,
+                            lon_y = UserLocation.lat
                         )
 
                         val postProjectBeneficiaryRepository = PostProjectBeneficiaryRepository(RetrofitClient.apiService)
@@ -385,7 +396,6 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
 
                             if (apiResponse.message == "Beneficiary saved successfully!!") {
                                 id = ""
-                                geom = ""
                                 otherName = ""
                                 lastName = ""
                                 memberId = ""
@@ -441,4 +451,9 @@ fun BeneficiaryContentTab(navController: NavController, groupViewModel: GroupVie
             onDismiss = { isUploading = false}
         )
     }
+}
+
+fun isValidEmail(email: String): Boolean {
+    val emailRegex = Regex("^\\w+([.-]?\\w+)*@\\w+([.-]?\\w+)*(\\.\\w{2,3})+$")
+    return emailRegex.matches(email)
 }
